@@ -33,11 +33,19 @@ class TaskAdapter(
         val task = taskList[position]
 
         holder.textViewTitle.text = task.title
-        holder.textViewDescription.text = task.description ?: ""
+
+        if (task.description.isNullOrBlank()) {
+            holder.textViewDescription.visibility = View.GONE
+        } else {
+            holder.textViewDescription.visibility = View.VISIBLE
+            holder.textViewDescription.text = task.description
+        }
+
+        holder.checkBoxCompleted.setOnCheckedChangeListener(null)
         holder.checkBoxCompleted.isChecked = task.isCompleted
 
-        holder.checkBoxCompleted.setOnCheckedChangeListener { _, _ ->
-            onTaskChecked(task.copy(isCompleted = holder.checkBoxCompleted.isChecked))
+        holder.checkBoxCompleted.setOnCheckedChangeListener { _, isChecked ->
+            onTaskChecked(task.copy(isCompleted = isChecked))
         }
 
         holder.buttonDelete.setOnClickListener {

@@ -2,10 +2,13 @@ package com.llorente.tfg_gpsreminders
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
+import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.llorente.tfg_gpsreminders.ui.AddTaskActivity
 import com.llorente.tfg_gpsreminders.ui.TaskAdapter
@@ -20,8 +23,12 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
 
+        val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         val recyclerViewTasks = findViewById<RecyclerView>(R.id.recyclerViewTasks)
         val fabAddTask = findViewById<FloatingActionButton>(R.id.fabAddTask)
+        val textViewEmptyState = findViewById<TextView>(R.id.textViewEmptyState)
+
+        setSupportActionBar(toolbar)
 
         taskAdapter = TaskAdapter(
             taskList = emptyList(),
@@ -40,6 +47,7 @@ class MainActivity : AppCompatActivity() {
 
         taskViewModel.allTasks.observe(this) { tasks ->
             taskAdapter.updateTasks(tasks)
+            textViewEmptyState.visibility = if (tasks.isEmpty()) View.VISIBLE else View.GONE
         }
 
         fabAddTask.setOnClickListener {
