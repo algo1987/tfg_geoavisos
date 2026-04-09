@@ -24,4 +24,7 @@ interface TaskDao {
 
     @Query("SELECT * FROM tasks ORDER BY id DESC")
     suspend fun getAllTasksList(): List<TaskEntity>
+
+    @Query("SELECT * FROM tasks WHERE id = :taskId LIMIT 1")
+    suspend fun getTaskById(taskId: Int): TaskEntity?
 }

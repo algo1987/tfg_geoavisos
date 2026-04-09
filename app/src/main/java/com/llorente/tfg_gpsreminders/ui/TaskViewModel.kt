@@ -37,4 +37,8 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             repository.deleteTask(task)
         }
     }
+
+    suspend fun getTaskById(taskId: Int): TaskEntity? {
+        return repository.getTaskById(taskId)
+    }
 }

@@ -23,7 +23,7 @@
         android:id="@+id/textViewEmptyState"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Todavía no hay tareas.\nPulsa + para crear la primera."
+        android:text="No tienes tareas aún.\nPulsa + para crear una tarea."
         android:textAlignment="center"
         android:textSize="16sp"
         android:visibility="gone"

@@ -13,6 +13,8 @@ import com.google.android.material.floatingactionbutton.FloatingActionButton
 import com.llorente.tfg_gpsreminders.ui.AddTaskActivity
 import com.llorente.tfg_gpsreminders.ui.TaskAdapter
 import com.llorente.tfg_gpsreminders.ui.TaskViewModel
+import com.llorente.tfg_gpsreminders.ui.TaskDetailActivity
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class MainActivity : AppCompatActivity() {
 
@@ -36,7 +38,19 @@ class MainActivity : AppCompatActivity() {
                 taskViewModel.updateTask(updatedTask)
             },
             onTaskDeleted = { task ->
-                taskViewModel.deleteTask(task)
+                MaterialAlertDialogBuilder(this)
+                    .setTitle("Eliminar tarea")
+                    .setMessage("¿Seguro que quieres eliminar esta tarea?")
+                    .setNegativeButton("Cancelar", null)
+                    .setPositiveButton("Eliminar") { _, _ ->
+                        taskViewModel.deleteTask(task)
+                    }
+                    .show()
+            },
+            onTaskClicked = { task ->
+                val intent = Intent(this, TaskDetailActivity::class.java)
+                intent.putExtra("task_id", task.id)
+                startActivity(intent)
             }
         )
 
