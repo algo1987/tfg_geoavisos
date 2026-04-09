@@ -8,6 +8,7 @@ import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
+import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
 import androidx.test.espresso.assertion.ViewAssertions.matches
 import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
 import androidx.test.espresso.matcher.ViewMatchers.withId
@@ -68,5 +69,27 @@ class MainActivityTest {
         pressBack()
 
         onView(withText(updatedTitle)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun deleteTask_removesTaskFromListAfterConfirmation() {
+        val titleToDelete = "Tarea borrar ${System.currentTimeMillis()}"
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withId(R.id.fabAddTask)).perform(click())
+        onView(withId(R.id.editTextTitle)).perform(replaceText(titleToDelete), closeSoftKeyboard())
+        onView(withId(R.id.editTextDescription)).perform(replaceText("Descripción borrar"), closeSoftKeyboard())
+        onView(withId(R.id.buttonSaveTask)).perform(click())
+
+        onView(withText(titleToDelete)).check(matches(isDisplayed()))
+
+        onView(withText(titleToDelete)).perform(click())
+
+        onView(withId(R.id.buttonDeleteTask)).perform(click())
+
+        onView(withText("Eliminar")).perform(click())
+
+        onView(withText(titleToDelete)).check(doesNotExist())
     }
 }
