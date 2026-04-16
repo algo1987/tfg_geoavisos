@@ -1,6 +1,7 @@
 package com.llorente.tfg_gpsreminders.ui
 
 import android.os.Bundle
+import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
@@ -20,8 +21,12 @@ class AddTaskActivity : AppCompatActivity() {
     private var taskCompleted: Boolean = false
     private var taskLatitude: Double? = null
     private var taskLongitude: Double? = null
+    private var taskLocationAddress: String? = null
     private var taskRadius: Float? = null
     private var taskLocationReminderEnabled: Boolean = false
+
+    private lateinit var textViewSelectedLocation: TextView
+    private lateinit var buttonRemoveLocation: MaterialButton
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -31,13 +36,18 @@ class AddTaskActivity : AppCompatActivity() {
         val textInputLayoutTitle = findViewById<TextInputLayout>(R.id.textInputLayoutTitle)
         val editTextTitle = findViewById<TextInputEditText>(R.id.editTextTitle)
         val editTextDescription = findViewById<TextInputEditText>(R.id.editTextDescription)
+        val buttonSelectLocation = findViewById<MaterialButton>(R.id.buttonSelectLocation)
+        buttonRemoveLocation = findViewById(R.id.buttonRemoveLocation)
         val buttonSaveTask = findViewById<MaterialButton>(R.id.buttonSaveTask)
+
+        textViewSelectedLocation = findViewById(R.id.textViewSelectedLocation)
 
         toolbar.setNavigationOnClickListener {
             finish()
         }
 
         readIntentData()
+        updateLocationUI()
 
         if (isEditMode) {
             toolbar.title = "Editar tarea"
@@ -48,6 +58,18 @@ class AddTaskActivity : AppCompatActivity() {
         } else {
             toolbar.title = "Nueva tarea"
             buttonSaveTask.text = "Guardar tarea"
+        }
+
+        buttonSelectLocation.setOnClickListener {
+            Toast.makeText(
+                this,
+                "La selección de ubicación se implementará en el siguiente paso",
+                Toast.LENGTH_SHORT
+            ).show()
+        }
+
+        buttonRemoveLocation.setOnClickListener {
+            clearLocation()
         }
 
         buttonSaveTask.setOnClickListener {
@@ -69,6 +91,7 @@ class AddTaskActivity : AppCompatActivity() {
                     isCompleted = taskCompleted,
                     latitude = taskLatitude,
                     longitude = taskLongitude,
+                    locationAddress = taskLocationAddress,
                     radius = taskRadius,
                     isLocationReminderEnabled = taskLocationReminderEnabled
                 )
@@ -78,7 +101,10 @@ class AddTaskActivity : AppCompatActivity() {
             } else {
                 val newTask = TaskEntity(
                     title = title,
-                    description = if (description.isEmpty()) null else description
+                    description = if (description.isEmpty()) null else description,
+                    latitude = taskLatitude,
+                    longitude = taskLongitude,
+                    locationAddress = taskLocationAddress
                 )
 
                 taskViewModel.insertTask(newTask)
@@ -103,11 +129,49 @@ class AddTaskActivity : AppCompatActivity() {
             taskLongitude = intent.getDoubleExtra("task_longitude", 0.0)
         }
 
+        taskLocationAddress = intent.getStringExtra("task_location_address")
+
         if (intent.hasExtra("task_radius")) {
             taskRadius = intent.getFloatExtra("task_radius", 0f)
         }
 
         taskLocationReminderEnabled =
             intent.getBooleanExtra("task_location_reminder_enabled", false)
+    }
+
+    private fun updateLocationUI() {
+        val hasLocation = taskLatitude != null && taskLongitude != null
+
+        if (!hasLocation) {
+            textViewSelectedLocation.text = "Sin ubicación asociada"
+            buttonRemoveLocation.visibility = android.view.View.GONE
+            return
+        }
+
+        textViewSelectedLocation.text = buildLocationText()
+        buttonRemoveLocation.visibility = android.view.View.VISIBLE
+    }
+
+    private fun buildLocationText(): String {
+        if (!taskLocationAddress.isNullOrBlank()) {
+            return taskLocationAddress!!
+        }
+
+        val latitudeText = taskLatitude?.toString() ?: "-"
+        val longitudeText = taskLongitude?.toString() ?: "-"
+
+        return "Latitud: $latitudeText\nLongitud: $longitudeText"
+    }
+
+    private fun clearLocation() {
+        taskLatitude = null
+        taskLongitude = null
+        taskLocationAddress = null
+        taskRadius = null
+        taskLocationReminderEnabled = false
+
+        updateLocationUI()
+
+        Toast.makeText(this, "Ubicación eliminada", Toast.LENGTH_SHORT).show()
     }
 }
