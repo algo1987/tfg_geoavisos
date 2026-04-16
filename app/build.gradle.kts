@@ -34,6 +34,12 @@ android {
         sourceCompatibility = JavaVersion.VERSION_11
         targetCompatibility = JavaVersion.VERSION_11
     }
+    // para que el valor de MAPS_API_KEY se sustituya en el manifest.xml en tiempo de compilación
+    // sin tener que escribir directamente la clave alli
+    defaultConfig {
+        val mapsApiKey = project.findProperty("MAPS_API_KEY") as String? ?: ""
+        manifestPlaceholders["MAPS_API_KEY"] = mapsApiKey
+    }
 }
 
 dependencies {
@@ -61,4 +67,9 @@ dependencies {
 
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
+
+    // maps, places y posicion del dispositivo
+    implementation("com.google.android.gms:play-services-maps:19.2.0")
+    implementation("com.google.android.libraries.places:places:4.4.1")
+    implementation("com.google.android.gms:play-services-location:21.3.0")
 }
