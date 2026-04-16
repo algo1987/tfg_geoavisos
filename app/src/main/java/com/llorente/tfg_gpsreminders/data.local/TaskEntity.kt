@@ -17,6 +17,7 @@ data class TaskEntity(
 
     val latitude: Double? = null,
     val longitude: Double? = null,
+    val locationName: String? = null,
     val locationAddress: String? = null,
     val radius: Float? = null,
 

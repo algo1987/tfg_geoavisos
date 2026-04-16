@@ -1,8 +1,11 @@
 package com.llorente.tfg_gpsreminders.ui
 
+import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.appbar.MaterialToolbar
@@ -21,12 +24,28 @@ class AddTaskActivity : AppCompatActivity() {
     private var taskCompleted: Boolean = false
     private var taskLatitude: Double? = null
     private var taskLongitude: Double? = null
+    private var taskLocationName: String? = null
     private var taskLocationAddress: String? = null
     private var taskRadius: Float? = null
     private var taskLocationReminderEnabled: Boolean = false
 
+    private lateinit var textViewSelectedPlace: TextView
     private lateinit var textViewSelectedLocation: TextView
     private lateinit var buttonRemoveLocation: MaterialButton
+
+    private val selectLocationLauncher =
+        registerForActivityResult(ActivityResultContracts.StartActivityForResult()) { result ->
+            if (result.resultCode != RESULT_OK || result.data == null) {
+                return@registerForActivityResult
+            }
+
+            taskLatitude = result.data?.getDoubleExtra("selected_latitude", 0.0)
+            taskLongitude = result.data?.getDoubleExtra("selected_longitude", 0.0)
+            taskLocationName = result.data?.getStringExtra("selected_place_name")
+            taskLocationAddress = result.data?.getStringExtra("selected_address")
+
+            updateLocationUI()
+        }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -40,6 +59,7 @@ class AddTaskActivity : AppCompatActivity() {
         buttonRemoveLocation = findViewById(R.id.buttonRemoveLocation)
         val buttonSaveTask = findViewById<MaterialButton>(R.id.buttonSaveTask)
 
+        textViewSelectedPlace = findViewById(R.id.textViewSelectedPlace)
         textViewSelectedLocation = findViewById(R.id.textViewSelectedLocation)
 
         toolbar.setNavigationOnClickListener {
@@ -61,11 +81,7 @@ class AddTaskActivity : AppCompatActivity() {
         }
 
         buttonSelectLocation.setOnClickListener {
-            Toast.makeText(
-                this,
-                "La selección de ubicación se implementará en el siguiente paso",
-                Toast.LENGTH_SHORT
-            ).show()
+            openSelectLocationScreen()
         }
 
         buttonRemoveLocation.setOnClickListener {
@@ -91,6 +107,7 @@ class AddTaskActivity : AppCompatActivity() {
                     isCompleted = taskCompleted,
                     latitude = taskLatitude,
                     longitude = taskLongitude,
+                    locationName = taskLocationName,
                     locationAddress = taskLocationAddress,
                     radius = taskRadius,
                     isLocationReminderEnabled = taskLocationReminderEnabled
@@ -104,6 +121,7 @@ class AddTaskActivity : AppCompatActivity() {
                     description = if (description.isEmpty()) null else description,
                     latitude = taskLatitude,
                     longitude = taskLongitude,
+                    locationName = taskLocationName,
                     locationAddress = taskLocationAddress
                 )
 
@@ -113,6 +131,17 @@ class AddTaskActivity : AppCompatActivity() {
 
             finish()
         }
+    }
+
+    private fun openSelectLocationScreen() {
+        val intent = Intent(this, SelectLocationActivity::class.java).apply {
+            taskLatitude?.let { putExtra("task_latitude", it) }
+            taskLongitude?.let { putExtra("task_longitude", it) }
+            putExtra("task_location_name", taskLocationName)
+            putExtra("task_location_address", taskLocationAddress)
+        }
+
+        selectLocationLauncher.launch(intent)
     }
 
     private fun readIntentData() {
@@ -129,6 +158,7 @@ class AddTaskActivity : AppCompatActivity() {
             taskLongitude = intent.getDoubleExtra("task_longitude", 0.0)
         }
 
+        taskLocationName = intent.getStringExtra("task_location_name")
         taskLocationAddress = intent.getStringExtra("task_location_address")
 
         if (intent.hasExtra("task_radius")) {
@@ -143,13 +173,23 @@ class AddTaskActivity : AppCompatActivity() {
         val hasLocation = taskLatitude != null && taskLongitude != null
 
         if (!hasLocation) {
+            textViewSelectedPlace.text = "Sin lugar asociado"
             textViewSelectedLocation.text = "Sin ubicación asociada"
-            buttonRemoveLocation.visibility = android.view.View.GONE
+            buttonRemoveLocation.visibility = View.GONE
             return
         }
 
+        textViewSelectedPlace.text = buildPlaceText()
         textViewSelectedLocation.text = buildLocationText()
-        buttonRemoveLocation.visibility = android.view.View.VISIBLE
+        buttonRemoveLocation.visibility = View.VISIBLE
+    }
+
+    private fun buildPlaceText(): String {
+        return if (!taskLocationName.isNullOrBlank()) {
+            taskLocationName!!
+        } else {
+            "Sin lugar asociado"
+        }
     }
 
     private fun buildLocationText(): String {
@@ -166,6 +206,7 @@ class AddTaskActivity : AppCompatActivity() {
     private fun clearLocation() {
         taskLatitude = null
         taskLongitude = null
+        taskLocationName = null
         taskLocationAddress = null
         taskRadius = null
         taskLocationReminderEnabled = false

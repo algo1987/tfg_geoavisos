@@ -9,10 +9,10 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import kotlinx.coroutines.launch
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class TaskDetailActivity : AppCompatActivity() {
 
@@ -24,6 +24,8 @@ class TaskDetailActivity : AppCompatActivity() {
     private lateinit var textViewTaskTitle: TextView
     private lateinit var textViewTaskDescription: TextView
     private lateinit var textViewTaskStatus: TextView
+    private lateinit var textViewTaskPlace: TextView
+    private lateinit var textViewTaskLocation: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,6 +35,9 @@ class TaskDetailActivity : AppCompatActivity() {
         textViewTaskTitle = findViewById(R.id.textViewTaskTitle)
         textViewTaskDescription = findViewById(R.id.textViewTaskDescription)
         textViewTaskStatus = findViewById(R.id.textViewTaskStatus)
+        textViewTaskPlace = findViewById(R.id.textViewTaskPlace)
+        textViewTaskLocation = findViewById(R.id.textViewTaskLocation)
+
         val buttonEditTask = findViewById<MaterialButton>(R.id.buttonEditTask)
         val buttonDeleteTask = findViewById<MaterialButton>(R.id.buttonDeleteTask)
 
@@ -60,6 +65,8 @@ class TaskDetailActivity : AppCompatActivity() {
 
                     task.latitude?.let { putExtra("task_latitude", it) }
                     task.longitude?.let { putExtra("task_longitude", it) }
+                    putExtra("task_location_name", task.locationName)
+                    putExtra("task_location_address", task.locationAddress)
                     task.radius?.let { putExtra("task_radius", it) }
 
                     putExtra("task_location_reminder_enabled", task.isLocationReminderEnabled)
@@ -97,7 +104,11 @@ class TaskDetailActivity : AppCompatActivity() {
             val task = taskViewModel.getTaskById(taskId)
 
             if (task == null) {
-                Toast.makeText(this@TaskDetailActivity, "La tarea no existe", Toast.LENGTH_SHORT).show()
+                Toast.makeText(
+                    this@TaskDetailActivity,
+                    "La tarea no existe",
+                    Toast.LENGTH_SHORT
+                ).show()
                 finish()
             } else {
                 currentTask = task
@@ -110,5 +121,18 @@ class TaskDetailActivity : AppCompatActivity() {
         textViewTaskTitle.text = task.title
         textViewTaskDescription.text = task.description ?: "Sin descripción"
         textViewTaskStatus.text = if (task.isCompleted) "Completada" else "Pendiente"
+
+        textViewTaskPlace.text = if (!task.locationName.isNullOrBlank()) {
+            task.locationName
+        } else {
+            "Sin lugar asociado"
+        }
+
+        textViewTaskLocation.text = when {
+            !task.locationAddress.isNullOrBlank() -> task.locationAddress
+            task.latitude != null && task.longitude != null ->
+                "Latitud: ${task.latitude}\nLongitud: ${task.longitude}"
+            else -> "Sin ubicación asociada"
+        }
     }
 }
