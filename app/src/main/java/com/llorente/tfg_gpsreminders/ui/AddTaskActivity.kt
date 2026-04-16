@@ -10,6 +10,7 @@ import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.textfield.TextInputEditText
 import com.google.android.material.textfield.TextInputLayout
 import com.llorente.tfg_gpsreminders.R
@@ -85,7 +86,7 @@ class AddTaskActivity : AppCompatActivity() {
         }
 
         buttonRemoveLocation.setOnClickListener {
-            clearLocation()
+            showRemoveLocationConfirmationDialog()
         }
 
         buttonSaveTask.setOnClickListener {
@@ -201,6 +202,17 @@ class AddTaskActivity : AppCompatActivity() {
         val longitudeText = taskLongitude?.toString() ?: "-"
 
         return "Latitud: $latitudeText\nLongitud: $longitudeText"
+    }
+
+    private fun showRemoveLocationConfirmationDialog() {
+        MaterialAlertDialogBuilder(this)
+            .setTitle("Quitar ubicación")
+            .setMessage("¿Seguro que quieres eliminar la ubicación asociada a esta tarea?")
+            .setNegativeButton("Cancelar", null)
+            .setPositiveButton("Quitar") { _, _ ->
+                clearLocation()
+            }
+            .show()
     }
 
     private fun clearLocation() {

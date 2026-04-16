@@ -19,14 +19,26 @@ import com.llorente.tfg_gpsreminders.R
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import com.llorente.tfg_gpsreminders.data.local.AppDatabase
+import com.llorente.tfg_gpsreminders.data.local.TaskEntity
+import kotlinx.coroutines.runBlocking
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
 
     @Before
-    fun clearDatabase() {
+    fun clearAllTables() = runBlocking {
         val context = ApplicationProvider.getApplicationContext<Context>()
-        context.deleteDatabase("tasks_database")
+        val database = AppDatabase.getDatabase(context)
+        database.clearAllTables()
+    }
+
+    private fun insertTaskDirectly(task: TaskEntity) = runBlocking {
+        val context = ApplicationProvider.getApplicationContext<Context>()
+        val database = AppDatabase.getDatabase(context)
+        database.taskDao().insertTask(task)
     }
 
     @Test
@@ -91,5 +103,163 @@ class MainActivityTest {
         onView(withText("Eliminar")).perform(click())
 
         onView(withText(titleToDelete)).check(doesNotExist())
+    }
+
+    @Test
+    fun openTaskDetail_showsPlaceAndLocation() {
+        val title = "Tarea con ubicacion ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion con ubicacion",
+                latitude = 40.4015,
+                longitude = -3.7026,
+                locationName = "Alcampo",
+                locationAddress = "P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+
+        onView(withId(R.id.textViewTaskTitle)).check(matches(withText(title)))
+        onView(withId(R.id.textViewTaskPlace)).check(matches(withText("Alcampo")))
+        onView(withId(R.id.textViewTaskLocation)).check(
+            matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
+        )
+    }
+
+    @Test
+    fun editTask_keepsLocationData() {
+        val title = "Tarea editar ubicacion ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion inicial",
+                latitude = 40.4015,
+                longitude = -3.7026,
+                locationName = "Alcampo",
+                locationAddress = "P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+
+        onView(withId(R.id.textViewTaskPlace)).check(matches(withText("Alcampo")))
+        onView(withId(R.id.textViewTaskLocation)).check(
+            matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
+        )
+
+        onView(withId(R.id.buttonEditTask)).perform(click())
+
+        onView(withId(R.id.textViewSelectedPlace)).check(matches(withText("Alcampo")))
+        onView(withId(R.id.textViewSelectedLocation)).check(
+            matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
+        )
+
+        onView(withId(R.id.buttonSaveTask)).perform(click())
+
+        onView(withId(R.id.textViewTaskPlace)).check(matches(withText("Alcampo")))
+        onView(withId(R.id.textViewTaskLocation)).check(
+            matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
+        )
+    }
+
+    @Test
+    fun removeLocation_confirmDialog_cancel_keepsLocation() {
+        val title = "Tarea cancelar quitar ubicacion ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion",
+                latitude = 40.4015,
+                longitude = -3.7026,
+                locationName = "Alcampo",
+                locationAddress = "P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+        onView(withId(R.id.buttonEditTask)).perform(click())
+
+        onView(withId(R.id.textViewSelectedPlace)).check(matches(withText("Alcampo")))
+        onView(withId(R.id.textViewSelectedLocation)).check(
+            matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
+        )
+
+        onView(withId(R.id.buttonRemoveLocation)).perform(click())
+
+        onView(withText("Quitar ubicación")).check(matches(isDisplayed()))
+        onView(withText("Cancelar")).perform(click())
+
+        onView(withId(R.id.textViewSelectedPlace)).check(matches(withText("Alcampo")))
+        onView(withId(R.id.textViewSelectedLocation)).check(
+            matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
+        )
+        onView(withId(R.id.buttonRemoveLocation)).check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun removeLocation_confirmDialog_accept_clearsLocation() {
+        val title = "Tarea confirmar quitar ubicacion ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion",
+                latitude = 40.4015,
+                longitude = -3.7026,
+                locationName = "Alcampo",
+                locationAddress = "P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+        onView(withId(R.id.buttonEditTask)).perform(click())
+
+        onView(withId(R.id.buttonRemoveLocation)).perform(click())
+
+        onView(withText("Quitar")).perform(click())
+
+        onView(withId(R.id.textViewSelectedPlace))
+            .check(matches(withText("Sin lugar asociado")))
+
+        onView(withId(R.id.textViewSelectedLocation))
+            .check(matches(withText("Sin ubicación asociada")))
+
+        onView(withId(R.id.buttonRemoveLocation))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+    }
+
+    @Test
+    fun taskWithoutLocation_showsDefaultTexts() {
+        val title = "Tarea sin ubicacion ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion sin ubicacion"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+
+        onView(withId(R.id.textViewTaskPlace))
+            .check(matches(withText("Sin lugar asociado")))
+
+        onView(withId(R.id.textViewTaskLocation))
+            .check(matches(withText("Sin ubicación asociada")))
     }
 }

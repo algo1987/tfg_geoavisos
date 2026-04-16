@@ -11,6 +11,7 @@ import org.junit.Assert.assertTrue
 import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
+import org.junit.Assert.assertNull
 
 @RunWith(AndroidJUnit4::class)
 class TaskDaoTest {
@@ -118,5 +119,91 @@ class TaskDaoTest {
     fun getAllTasks_whenEmpty_returnsEmptyList() = runBlocking {
         val tasks = taskDao.getAllTasksList()
         assertTrue(tasks.isEmpty())
+    }
+
+    @Test
+    fun insertTask_withLocation_savesAllLocationFields() = runBlocking {
+        val task = TaskEntity(
+            title = "Comprar en Alcampo",
+            description = "Ir al supermercado",
+            latitude = 40.4015,
+            longitude = -3.7026,
+            locationName = "Alcampo",
+            locationAddress = "Calle del Ejemplo, 2, Madrid, Spain"
+        )
+
+        taskDao.insertTask(task)
+        val tasks = taskDao.getAllTasksList()
+
+        assertEquals(1, tasks.size)
+        assertEquals("Comprar en Alcampo", tasks[0].title)
+        assertEquals("Ir al supermercado", tasks[0].description)
+        assertEquals(40.4015, tasks[0].latitude!!, 0.0001)
+        assertEquals(-3.7026, tasks[0].longitude!!, 0.0001)
+        assertEquals("Alcampo", tasks[0].locationName)
+        assertEquals(
+            "Calle del Ejemplo, 2, Madrid, Spain",
+            tasks[0].locationAddress
+        )
+    }
+
+    @Test
+    fun updateTask_withLocation_updatesAllLocationFields() = runBlocking {
+        val task = TaskEntity(
+            title = "Hacer compra",
+            description = "Tarea inicial"
+        )
+
+        taskDao.insertTask(task)
+        val insertedTask = taskDao.getAllTasksList().first()
+
+        val updatedTask = insertedTask.copy(
+            latitude = 40.4020,
+            longitude = -3.7030,
+            locationName = "Mercadona",
+            locationAddress = "Calle del Ejemplo, 10, Madrid, Spain"
+        )
+
+        taskDao.updateTask(updatedTask)
+        val tasks = taskDao.getAllTasksList()
+
+        assertEquals(1, tasks.size)
+        assertEquals("Hacer compra", tasks[0].title)
+        assertEquals("Tarea inicial", tasks[0].description)
+        assertEquals(40.4020, tasks[0].latitude!!, 0.0001)
+        assertEquals(-3.7030, tasks[0].longitude!!, 0.0001)
+        assertEquals("Mercadona", tasks[0].locationName)
+        assertEquals("Calle del Ejemplo, 10, Madrid, Spain", tasks[0].locationAddress)
+    }
+
+    @Test
+    fun updateTask_removeLocation_clearsAllLocationFields() = runBlocking {
+        val task = TaskEntity(
+            title = "Recoger pedido",
+            description = "En tienda",
+            latitude = 40.4015,
+            longitude = -3.7026,
+            locationName = "Alcampo",
+            locationAddress = "Calle de otro ejemplo, Madrid, Spain"
+        )
+
+        taskDao.insertTask(task)
+        val insertedTask = taskDao.getAllTasksList().first()
+
+        val updatedTask = insertedTask.copy(
+            latitude = null,
+            longitude = null,
+            locationName = null,
+            locationAddress = null
+        )
+
+        taskDao.updateTask(updatedTask)
+        val tasks = taskDao.getAllTasksList()
+
+        assertEquals(1, tasks.size)
+        assertNull(tasks[0].latitude)
+        assertNull(tasks[0].longitude)
+        assertNull(tasks[0].locationName)
+        assertNull(tasks[0].locationAddress)
     }
 }

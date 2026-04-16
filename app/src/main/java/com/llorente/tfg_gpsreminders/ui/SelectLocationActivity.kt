@@ -218,8 +218,14 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 selectedPlaceName = place.displayName
                 selectedAddress = place.formattedAddress
 
+                val searchText = if (!item.secondaryText.isNullOrBlank()) {
+                    "${item.primaryText}, ${item.secondaryText}"
+                } else {
+                    item.primaryText
+                }
+
                 suppressSearchTextWatcher = true
-                editTextSearchLocation.setText(item.primaryText)
+                editTextSearchLocation.setText(searchText)
                 editTextSearchLocation.setSelection(editTextSearchLocation.text?.length ?: 0)
                 suppressSearchTextWatcher = false
 
