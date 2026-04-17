@@ -2,11 +2,18 @@ package com.llorente.tfg_gpsreminders.ui
 
 import android.content.Intent
 import android.os.Bundle
+import android.view.View
 import android.widget.TextView
 import android.widget.Toast
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.GoogleMap
+import com.google.android.gms.maps.OnMapReadyCallback
+import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -14,18 +21,21 @@ import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import kotlinx.coroutines.launch
 
-class TaskDetailActivity : AppCompatActivity() {
+class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private val taskViewModel: TaskViewModel by viewModels()
 
     private var currentTask: TaskEntity? = null
     private var taskId: Int = -1
+    private var googleMap: GoogleMap? = null
 
     private lateinit var textViewTaskTitle: TextView
     private lateinit var textViewTaskDescription: TextView
     private lateinit var textViewTaskStatus: TextView
     private lateinit var textViewTaskPlace: TextView
     private lateinit var textViewTaskLocation: TextView
+    private lateinit var textLabelMap: TextView
+    private lateinit var mapTaskDetailContainer: View
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -37,6 +47,8 @@ class TaskDetailActivity : AppCompatActivity() {
         textViewTaskStatus = findViewById(R.id.textViewTaskStatus)
         textViewTaskPlace = findViewById(R.id.textViewTaskPlace)
         textViewTaskLocation = findViewById(R.id.textViewTaskLocation)
+        textLabelMap = findViewById(R.id.textLabelMap)
+        mapTaskDetailContainer = findViewById(R.id.mapTaskDetailContainer)
 
         val buttonEditTask = findViewById<MaterialButton>(R.id.buttonEditTask)
         val buttonDeleteTask = findViewById<MaterialButton>(R.id.buttonDeleteTask)
@@ -52,6 +64,10 @@ class TaskDetailActivity : AppCompatActivity() {
             finish()
             return
         }
+
+        val mapFragment =
+            supportFragmentManager.findFragmentById(R.id.mapTaskDetailContainer) as SupportMapFragment
+        mapFragment.getMapAsync(this)
 
         loadTask()
 
@@ -99,6 +115,19 @@ class TaskDetailActivity : AppCompatActivity() {
         }
     }
 
+    override fun onMapReady(map: GoogleMap) {
+        googleMap = map
+
+        googleMap?.uiSettings?.isZoomControlsEnabled = true
+        googleMap?.uiSettings?.isZoomGesturesEnabled = true
+        googleMap?.uiSettings?.isScrollGesturesEnabled = true
+        googleMap?.uiSettings?.isRotateGesturesEnabled = true
+        googleMap?.uiSettings?.isTiltGesturesEnabled = true
+        googleMap?.uiSettings?.isMapToolbarEnabled = true
+
+        currentTask?.let { renderMapIfNeeded(it) }
+    }
+
     private fun loadTask() {
         lifecycleScope.launch {
             val task = taskViewModel.getTaskById(taskId)
@@ -134,5 +163,30 @@ class TaskDetailActivity : AppCompatActivity() {
                 "Latitud: ${task.latitude}\nLongitud: ${task.longitude}"
             else -> "Sin ubicación asociada"
         }
+
+        renderMapIfNeeded(task)
+    }
+
+    private fun renderMapIfNeeded(task: TaskEntity) {
+        val hasCoordinates = task.latitude != null && task.longitude != null
+
+        if (!hasCoordinates) {
+            textLabelMap.visibility = View.GONE
+            mapTaskDetailContainer.visibility = View.GONE
+            return
+        }
+
+        textLabelMap.visibility = View.VISIBLE
+        mapTaskDetailContainer.visibility = View.VISIBLE
+
+        val latLng = LatLng(task.latitude!!, task.longitude!!)
+
+        googleMap?.clear()
+        googleMap?.addMarker(
+            MarkerOptions()
+                .position(latLng)
+                .title(task.locationName ?: "Ubicación")
+        )
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
     }
 }
