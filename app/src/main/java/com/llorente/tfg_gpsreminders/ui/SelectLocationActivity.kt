@@ -31,6 +31,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.llorente.tfg_gpsreminders.R
+import java.util.Locale
 
 class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -48,7 +49,6 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private var googleMap: GoogleMap? = null
     private var selectedLatLng: LatLng? = null
-
     private var selectedPlaceName: String? = null
     private var selectedAddress: String? = null
     private var suppressSearchTextWatcher = false
@@ -100,9 +100,12 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
         googleMap?.uiSettings?.isZoomControlsEnabled = true
         googleMap?.uiSettings?.isMapToolbarEnabled = true
+        googleMap?.uiSettings?.isZoomGesturesEnabled = true
+        googleMap?.uiSettings?.isScrollGesturesEnabled = true
 
         googleMap?.setOnMapClickListener { latLng ->
             selectedLatLng = latLng
+            selectedPlaceName = buildManualPlaceName(latLng)
             selectedAddress = "Ubicación seleccionada manualmente"
 
             updateMarkerAndCamera(latLng, selectedAddress)
@@ -112,7 +115,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         enableMyLocationIfGranted()
 
         if (selectedLatLng != null) {
-            updateMarkerAndCamera(selectedLatLng!!, selectedAddress)
+            updateMarkerAndCamera(selectedLatLng!!, selectedAddress ?: selectedPlaceName)
         } else {
             val defaultLocation = LatLng(40.4168, -3.7038)
             googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 5f))
@@ -232,7 +235,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 predictionAdapter.updateItems(emptyList())
                 recyclerViewPredictions.visibility = View.GONE
 
-                updateMarkerAndCamera(latLng, selectedPlaceName ?: selectedAddress)
+                updateMarkerAndCamera(latLng, selectedAddress ?: selectedPlaceName)
                 updateSelectionUI()
             }
             .addOnFailureListener {
@@ -271,6 +274,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             val longitude = intent.getDoubleExtra("task_longitude", 0.0)
 
             selectedLatLng = LatLng(latitude, longitude)
+            selectedPlaceName = intent.getStringExtra("task_location_name")
             selectedAddress = intent.getStringExtra("task_location_address")
         }
     }
@@ -300,6 +304,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
                 val latLng = LatLng(location.latitude, location.longitude)
                 selectedLatLng = latLng
+                selectedPlaceName = buildManualPlaceName(latLng)
                 selectedAddress = "Ubicación actual"
 
                 updateMarkerAndCamera(latLng, selectedAddress)
@@ -321,7 +326,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 .position(latLng)
                 .title(title ?: "Ubicación seleccionada")
         )
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 18f))
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
     }
 
     private fun updateSelectionUI() {
@@ -338,11 +343,25 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun buildLocationPreview(latLng: LatLng): String {
-        if (!selectedAddress.isNullOrBlank()) {
-            return selectedAddress!!
+        val placeText = if (!selectedPlaceName.isNullOrBlank()) {
+            selectedPlaceName
+        } else {
+            buildManualPlaceName(latLng)
         }
 
-        return "Latitud: ${latLng.latitude}\nLongitud: ${latLng.longitude}"
+        val addressText = if (!selectedAddress.isNullOrBlank()) {
+            selectedAddress
+        } else {
+            "Sin dirección disponible"
+        }
+
+        return "$placeText\n$addressText"
+    }
+
+    private fun buildManualPlaceName(latLng: LatLng): String {
+        val lat = String.format(Locale.US, "%.5f", latLng.latitude)
+        val lng = String.format(Locale.US, "%.5f", latLng.longitude)
+        return "Desconocido. Lat: $lat, Lon: $lng"
     }
 
     private fun returnSelectedLocation() {
