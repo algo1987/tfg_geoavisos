@@ -262,4 +262,64 @@ class MainActivityTest {
         onView(withId(R.id.textViewTaskLocation))
             .check(matches(withText("Sin ubicación asociada")))
     }
+
+    @Test
+    fun taskWithLocation_showsMapInDetail() {
+        val title = "Tarea con mapa ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion con ubicacion",
+                latitude = 40.4015,
+                longitude = -3.7026,
+                locationName = "Alcampo",
+                locationAddress = "P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+
+        onView(withId(R.id.textViewTaskPlace))
+            .check(matches(withText("Alcampo")))
+
+        onView(withId(R.id.textViewTaskLocation))
+            .check(matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain")))
+
+        onView(withId(R.id.textLabelMap))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.mapTaskDetailContainer))
+            .check(matches(isDisplayed()))
+    }
+
+    @Test
+    fun taskWithoutLocation_hidesMapInDetail() {
+        val title = "Tarea sin mapa ${System.currentTimeMillis()}"
+
+        insertTaskDirectly(
+            TaskEntity(
+                title = title,
+                description = "Descripcion sin ubicacion"
+            )
+        )
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withText(title)).perform(click())
+
+        onView(withId(R.id.textViewTaskPlace))
+            .check(matches(withText("Sin lugar asociado")))
+
+        onView(withId(R.id.textViewTaskLocation))
+            .check(matches(withText("Sin ubicación asociada")))
+
+        onView(withId(R.id.textLabelMap))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+
+        onView(withId(R.id.mapTaskDetailContainer))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
+    }
 }
