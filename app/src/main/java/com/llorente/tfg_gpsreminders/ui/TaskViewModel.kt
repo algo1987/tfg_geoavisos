@@ -3,11 +3,9 @@ package com.llorente.tfg_gpsreminders.ui
 import android.app.Application
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.LiveData
-import androidx.lifecycle.viewModelScope
 import com.llorente.tfg_gpsreminders.data.TaskRepository
 import com.llorente.tfg_gpsreminders.data.local.AppDatabase
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
-import kotlinx.coroutines.launch
 
 class TaskViewModel(application: Application) : AndroidViewModel(application) {
 
@@ -20,25 +18,23 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
         allTasks = repository.allTasks
     }
 
-    fun insertTask(task: TaskEntity) {
-        viewModelScope.launch {
-            repository.insertTask(task)
-        }
+    suspend fun insertTask(task: TaskEntity) {
+        repository.insertTask(task)
     }
 
-    fun updateTask(task: TaskEntity) {
-        viewModelScope.launch {
-            repository.updateTask(task)
-        }
+    suspend fun updateTask(task: TaskEntity) {
+        repository.updateTask(task)
     }
 
-    fun deleteTask(task: TaskEntity) {
-        viewModelScope.launch {
-            repository.deleteTask(task)
-        }
+    suspend fun deleteTask(task: TaskEntity) {
+        repository.deleteTask(task)
     }
 
     suspend fun getTaskById(taskId: Int): TaskEntity? {
         return repository.getTaskById(taskId)
+    }
+
+    suspend fun getAllTasksList(): List<TaskEntity> {
+        return repository.getAllTasksList()
     }
 }
