@@ -6,15 +6,19 @@ import android.view.View
 import android.widget.TextView
 import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.material.appbar.MaterialToolbar
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.google.android.material.floatingactionbutton.FloatingActionButton
+import com.llorente.tfg_gpsreminders.geofencing.GeofenceSyncManager
+import com.llorente.tfg_gpsreminders.notifications.TaskNotificationHelper
 import com.llorente.tfg_gpsreminders.ui.AddTaskActivity
 import com.llorente.tfg_gpsreminders.ui.TaskAdapter
-import com.llorente.tfg_gpsreminders.ui.TaskViewModel
 import com.llorente.tfg_gpsreminders.ui.TaskDetailActivity
-import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.llorente.tfg_gpsreminders.ui.TaskViewModel
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -24,6 +28,8 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        TaskNotificationHelper.createNotificationChannel(this)
 
         val toolbar = findViewById<MaterialToolbar>(R.id.toolbar)
         val recyclerViewTasks = findViewById<RecyclerView>(R.id.recyclerViewTasks)
@@ -35,7 +41,10 @@ class MainActivity : AppCompatActivity() {
         taskAdapter = TaskAdapter(
             taskList = emptyList(),
             onTaskChecked = { updatedTask ->
-                taskViewModel.updateTask(updatedTask)
+                lifecycleScope.launch {
+                    taskViewModel.updateTask(updatedTask)
+                    GeofenceSyncManager.syncAllGeofences(this@MainActivity)
+                }
             },
             onTaskDeleted = { task ->
                 MaterialAlertDialogBuilder(this)
@@ -43,7 +52,10 @@ class MainActivity : AppCompatActivity() {
                     .setMessage("¿Seguro que quieres eliminar esta tarea?")
                     .setNegativeButton("Cancelar", null)
                     .setPositiveButton("Eliminar") { _, _ ->
-                        taskViewModel.deleteTask(task)
+                        lifecycleScope.launch {
+                            taskViewModel.deleteTask(task)
+                            GeofenceSyncManager.syncAllGeofences(this@MainActivity)
+                        }
                     }
                     .show()
             },
@@ -68,4 +80,9 @@ class MainActivity : AppCompatActivity() {
             startActivity(Intent(this, AddTaskActivity::class.java))
         }
     }
+
+//    override fun onResume() {
+//        super.onResume()
+//        GeofenceSyncManager.syncAllGeofences(this)
+//    }
 }
