@@ -86,7 +86,7 @@ object GeofenceSyncManager {
                     }
 
                     val geofencingRequest = GeofencingRequest.Builder()
-                        .setInitialTrigger(0)
+                        .setInitialTrigger(GeofencingRequest.INITIAL_TRIGGER_ENTER)
                         .addGeofences(geofenceList)
                         .build()
 
@@ -116,6 +116,7 @@ object GeofenceSyncManager {
             .setTransitionTypes(
                 Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
             )
+            .setNotificationResponsiveness(30000)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .build()
     }
