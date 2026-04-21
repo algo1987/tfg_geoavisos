@@ -1,6 +1,7 @@
 package com.llorente.tfg_gpsreminders.ui
 
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.view.View
 import android.widget.TextView
@@ -12,6 +13,8 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.material.appbar.MaterialToolbar
@@ -39,6 +42,8 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var textViewReminderRadius: TextView
     private lateinit var textLabelMap: TextView
     private lateinit var mapTaskDetailContainer: View
+
+    private var circle: Circle? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -197,12 +202,25 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
         val latLng = LatLng(task.latitude!!, task.longitude!!)
 
+        val radius = task.radius ?: 150f
+
         googleMap?.clear()
         googleMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title(task.locationName ?: "Ubicación")
         )
-        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, 16f))
+
+        circle = googleMap?.addCircle(
+            CircleOptions()
+                .center(latLng)
+                .radius(radius.toDouble())
+                .strokeWidth(2f)
+                .strokeColor(Color.parseColor("#4285F4"))
+                .fillColor(Color.parseColor("#334285F4"))
+        )
+
+        val zoom = if (radius > 300) 14f else 16f
+        googleMap?.moveCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
     }
 }

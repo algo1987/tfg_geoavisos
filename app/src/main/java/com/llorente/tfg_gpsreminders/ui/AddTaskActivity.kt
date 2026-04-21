@@ -235,6 +235,9 @@ class AddTaskActivity : AppCompatActivity() {
             taskLongitude?.let { putExtra("task_longitude", it) }
             putExtra("task_location_name", taskLocationName)
             putExtra("task_location_address", taskLocationAddress)
+
+            val radius = editTextRadius.text?.toString()?.trim()?.toFloatOrNull() ?: (taskRadius ?: 150f)
+            putExtra("task_radius", radius)
         }
 
         selectLocationLauncher.launch(intent)

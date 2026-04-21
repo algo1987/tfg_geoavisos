@@ -22,6 +22,9 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
+import com.google.android.gms.maps.model.Circle
+import com.google.android.gms.maps.model.CircleOptions
+import android.graphics.Color
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
@@ -54,6 +57,9 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     private var selectedPlaceName: String? = null
     private var selectedAddress: String? = null
     private var suppressSearchTextWatcher = false
+
+    private var selectedRadius: Float = 150f
+    private var circle: Circle? = null
 
     private val fusedLocationClient by lazy {
         LocationServices.getFusedLocationProviderClient(this)
@@ -278,6 +284,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             selectedLatLng = LatLng(latitude, longitude)
             selectedPlaceName = intent.getStringExtra("task_location_name")
             selectedAddress = intent.getStringExtra("task_location_address")
+            selectedRadius = intent.getFloatExtra("task_radius", 150f)
         }
     }
 
@@ -356,12 +363,31 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun updateMarkerAndCamera(latLng: LatLng, title: String?) {
         googleMap?.clear()
+
+        // Marker
         googleMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title(title ?: "Ubicación seleccionada")
         )
-        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, 17f))
+
+        // 👇 Circulo de la geovalla
+        circle = googleMap?.addCircle(
+            CircleOptions()
+                .center(latLng)
+                .radius(selectedRadius.toDouble())
+                .strokeWidth(2f)
+                .strokeColor(Color.parseColor("#4285F4"))
+                .fillColor(Color.parseColor("#334285F4"))
+        )
+
+        val zoom = when {
+            selectedRadius <= 150 -> 17f
+            selectedRadius <= 300 -> 15.5f
+            else -> 14f
+        }
+
+        googleMap?.animateCamera(CameraUpdateFactory.newLatLngZoom(latLng, zoom))
     }
 
     private fun updateSelectionUI() {
