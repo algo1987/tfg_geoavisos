@@ -6,6 +6,7 @@ import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
+import android.os.CancellationSignal
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -16,6 +17,7 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.LocationServices
+import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
@@ -105,10 +107,10 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
         googleMap?.setOnMapClickListener { latLng ->
             selectedLatLng = latLng
-            selectedPlaceName = buildManualPlaceName(latLng)
-            selectedAddress = "Ubicación seleccionada manualmente"
+            selectedPlaceName = "Desconocido"
+            selectedAddress = null
 
-            updateMarkerAndCamera(latLng, selectedAddress)
+            updateMarkerAndCamera(latLng, selectedPlaceName)
             updateSelectionUI()
         }
 
@@ -293,30 +295,63 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
         fusedLocationClient.lastLocation
             .addOnSuccessListener { location ->
-                if (location == null) {
-                    Toast.makeText(
-                        this,
-                        "No se pudo obtener la ubicación actual",
-                        Toast.LENGTH_SHORT
-                    ).show()
+                if (location != null) {
+                    val latLng = LatLng(location.latitude, location.longitude)
+                    applyCurrentLocation(latLng)
                     return@addOnSuccessListener
                 }
 
-                val latLng = LatLng(location.latitude, location.longitude)
-                selectedLatLng = latLng
-                selectedPlaceName = buildManualPlaceName(latLng)
-                selectedAddress = "Ubicación actual"
-
-                updateMarkerAndCamera(latLng, selectedAddress)
-                updateSelectionUI()
+                requestFreshCurrentLocation()
             }
             .addOnFailureListener {
-                Toast.makeText(
-                    this,
-                    "Error al obtener la ubicación actual",
-                    Toast.LENGTH_SHORT
-                ).show()
+                requestFreshCurrentLocation()
             }
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestFreshCurrentLocation() {
+
+        val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
+            com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
+            1000
+        )
+            .setMaxUpdates(1)
+            .build()
+
+        val locationCallback = object : com.google.android.gms.location.LocationCallback() {
+            override fun onLocationResult(result: com.google.android.gms.location.LocationResult) {
+                val location = result.lastLocation
+
+                if (location == null) {
+                    Toast.makeText(
+                        this@SelectLocationActivity,
+                        "No se pudo obtener la ubicación actual",
+                        Toast.LENGTH_SHORT
+                    ).show()
+                    return
+                }
+
+                val latLng = LatLng(location.latitude, location.longitude)
+                applyCurrentLocation(latLng)
+
+                fusedLocationClient.removeLocationUpdates(this)
+            }
+        }
+
+        fusedLocationClient.requestLocationUpdates(
+            locationRequest,
+            locationCallback,
+            mainLooper
+        )
+    }
+
+    private fun applyCurrentLocation(latLng: LatLng) {
+        selectedLatLng = latLng
+        selectedPlaceName = "Ubicación actual"
+        selectedAddress = null
+
+        updateMarkerAndCamera(latLng, selectedPlaceName)
+        updateSelectionUI()
     }
 
     private fun updateMarkerAndCamera(latLng: LatLng, title: String?) {

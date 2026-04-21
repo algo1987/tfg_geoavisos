@@ -117,6 +117,40 @@
                 android:textSize="16sp" />
 
             <TextView
+                android:id="@+id/textLabelReminderStatus"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Recordatorio por ubicación"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textViewReminderStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="Desactivado"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/textLabelReminderRadius"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:text="Radio de activación"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/textViewReminderRadius"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="4dp"
+                android:text="No configurado"
+                android:textSize="16sp" />
+
+            <TextView
                 android:id="@+id/textLabelMap"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"

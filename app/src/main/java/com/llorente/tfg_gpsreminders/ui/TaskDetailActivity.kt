@@ -19,6 +19,7 @@ import com.google.android.material.button.MaterialButton
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
+import com.llorente.tfg_gpsreminders.geofencing.GeofenceSyncManager
 import kotlinx.coroutines.launch
 
 class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -34,6 +35,8 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
     private lateinit var textViewTaskStatus: TextView
     private lateinit var textViewTaskPlace: TextView
     private lateinit var textViewTaskLocation: TextView
+    private lateinit var textViewReminderStatus: TextView
+    private lateinit var textViewReminderRadius: TextView
     private lateinit var textLabelMap: TextView
     private lateinit var mapTaskDetailContainer: View
 
@@ -47,6 +50,8 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         textViewTaskStatus = findViewById(R.id.textViewTaskStatus)
         textViewTaskPlace = findViewById(R.id.textViewTaskPlace)
         textViewTaskLocation = findViewById(R.id.textViewTaskLocation)
+        textViewReminderStatus = findViewById(R.id.textViewReminderStatus)
+        textViewReminderRadius = findViewById(R.id.textViewReminderRadius)
         textLabelMap = findViewById(R.id.textLabelMap)
         mapTaskDetailContainer = findViewById(R.id.mapTaskDetailContainer)
 
@@ -99,9 +104,12 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
                     .setMessage("¿Seguro que quieres eliminar esta tarea?")
                     .setNegativeButton("Cancelar", null)
                     .setPositiveButton("Eliminar") { _, _ ->
-                        taskViewModel.deleteTask(task)
-                        Toast.makeText(this, "Tarea eliminada", Toast.LENGTH_SHORT).show()
-                        finish()
+                        lifecycleScope.launch {
+                            taskViewModel.deleteTask(task)
+                            GeofenceSyncManager.syncAllGeofences(this@TaskDetailActivity)
+                            Toast.makeText(this@TaskDetailActivity, "Tarea eliminada", Toast.LENGTH_SHORT).show()
+                            finish()
+                        }
                     }
                     .show()
             }
@@ -162,6 +170,14 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
             task.latitude != null && task.longitude != null ->
                 "Latitud: ${task.latitude}\nLongitud: ${task.longitude}"
             else -> "Sin ubicación asociada"
+        }
+
+        if (task.isLocationReminderEnabled) {
+            textViewReminderStatus.text = "Activado"
+            textViewReminderRadius.text = "${(task.radius ?: 150f).toInt()} metros"
+        } else {
+            textViewReminderStatus.text = "Desactivado"
+            textViewReminderRadius.text = "No configurado"
         }
 
         renderMapIfNeeded(task)
