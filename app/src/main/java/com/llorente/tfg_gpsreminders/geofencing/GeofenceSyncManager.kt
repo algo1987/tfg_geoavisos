@@ -21,6 +21,7 @@ object GeofenceSyncManager {
 
     private const val TAG = "GEOFENCE_SYNC"
     private const val DEFAULT_RADIUS = 150f
+    private const val NOTIFICATION_RESPONSIVENESS_MS = 10000
 
     fun syncAllGeofences(context: Context) {
         val appContext = context.applicationContext
@@ -113,10 +114,8 @@ object GeofenceSyncManager {
                 task.longitude!!,
                 task.radius ?: DEFAULT_RADIUS
             )
-            .setTransitionTypes(
-                Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
-            )
-            .setNotificationResponsiveness(30000)
+            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setNotificationResponsiveness(NOTIFICATION_RESPONSIVENESS_MS)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .build()
     }

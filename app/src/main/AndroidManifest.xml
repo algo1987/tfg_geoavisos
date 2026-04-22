@@ -38,7 +38,7 @@
         <receiver
             android:name=".geofencing.GeofenceBroadcastReceiver"
             android:enabled="true"
-            android:exported="false" />
+            android:exported="true" />
 
         <receiver
             android:name=".geofencing.BootCompletedReceiver"
