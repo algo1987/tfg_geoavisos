@@ -81,8 +81,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-//    override fun onResume() {
-//        super.onResume()
-//        GeofenceSyncManager.syncAllGeofences(this)
-//    }
+    override fun onResume() {
+        super.onResume()
+        GeofenceSyncManager.syncAllGeofences(this)
+    }
 }
