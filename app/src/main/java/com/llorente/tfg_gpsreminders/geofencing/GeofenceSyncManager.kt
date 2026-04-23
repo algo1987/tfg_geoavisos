@@ -114,7 +114,9 @@ object GeofenceSyncManager {
                 task.longitude!!,
                 task.radius ?: DEFAULT_RADIUS
             )
-            .setTransitionTypes(Geofence.GEOFENCE_TRANSITION_ENTER)
+            .setTransitionTypes(
+                Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
+            )
             .setNotificationResponsiveness(NOTIFICATION_RESPONSIVENESS_MS)
             .setExpirationDuration(Geofence.NEVER_EXPIRE)
             .build()

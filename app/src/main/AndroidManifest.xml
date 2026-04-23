@@ -41,6 +41,11 @@
             android:exported="true" />
 
         <receiver
+            android:name=".notifications.TaskNotificationActionReceiver"
+            android:enabled="true"
+            android:exported="false" />
+
+        <receiver
             android:name=".geofencing.BootCompletedReceiver"
             android:enabled="true"
             android:exported="true">

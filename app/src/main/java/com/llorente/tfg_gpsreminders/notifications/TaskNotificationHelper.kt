@@ -21,6 +21,11 @@ object TaskNotificationHelper {
     private const val CHANNEL_NAME = "Recordatorios por ubicación"
     private const val CHANNEL_DESCRIPTION = "Notificaciones al entrar en una zona asociada a una tarea"
 
+    const val ACTION_COMPLETE_TASK_FROM_NOTIFICATION =
+        "com.llorente.tfg_gpsreminders.ACTION_COMPLETE_TASK_FROM_NOTIFICATION"
+
+    const val EXTRA_TASK_ID = "extra_task_id"
+
     fun createNotificationChannel(context: Context) {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
 
@@ -48,15 +53,30 @@ object TaskNotificationHelper {
             if (!granted) return
         }
 
-        val intent = Intent(context, TaskDetailActivity::class.java).apply {
+        val openTaskIntent = Intent(context, TaskDetailActivity::class.java).apply {
             putExtra("task_id", task.id)
             flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TOP
         }
 
-        val pendingIntent = PendingIntent.getActivity(
+        val openTaskPendingIntent = PendingIntent.getActivity(
             context,
             task.id,
-            intent,
+            openTaskIntent,
+            PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
+        )
+
+        val completeIntent = Intent(
+            context,
+            TaskNotificationActionReceiver::class.java
+        ).apply {
+            action = ACTION_COMPLETE_TASK_FROM_NOTIFICATION
+            putExtra(EXTRA_TASK_ID, task.id)
+        }
+
+        val completePendingIntent = PendingIntent.getBroadcast(
+            context,
+            task.id + 10000,
+            completeIntent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
@@ -67,28 +87,32 @@ object TaskNotificationHelper {
         }
 
         val title = "Tarea '${task.title}' pendiente cerca. Lugar: $locationText"
-
         val contentText = "Tarea '${task.title}' cerca de tu ubicación"
-
-        val bigText = buildBigText(task, locationText)
+        val bigText = buildBigText(task)
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_map)
             .setContentTitle(title)
             .setContentText(contentText)
-            .setStyle(
-                NotificationCompat.BigTextStyle().bigText(bigText)
-            )
+            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
-            .setContentIntent(pendingIntent)
+            .setContentIntent(openTaskPendingIntent)
+            .addAction(
+                android.R.drawable.checkbox_on_background,
+                "Marcar como completada",
+                completePendingIntent
+            )
             .build()
 
         NotificationManagerCompat.from(context).notify(task.id, notification)
     }
 
-    private fun buildBigText(task: TaskEntity, locationText: String): String {
+    fun cancelTaskNotification(context: Context, taskId: Int) {
+        NotificationManagerCompat.from(context).cancel(taskId)
+    }
 
+    private fun buildBigText(task: TaskEntity): String {
         val descriptionPart = if (!task.description.isNullOrBlank()) {
             "Descripción: ${task.description}"
         } else {
@@ -103,7 +127,7 @@ object TaskNotificationHelper {
         }
 
         return """
-            Tienes pendiente la tarea '${task.title}' cerca de la zona donde te encuentras.
+            Tienes pendiente la tarea '${task.title}' cerca de donde te encuentras.
             
             $descriptionPart
             
