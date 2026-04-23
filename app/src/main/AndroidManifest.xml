@@ -31,7 +31,10 @@
             </intent-filter>
         </activity>
 
-        <activity android:name=".ui.AddTaskActivity" />
+        <activity
+            android:name=".ui.AddTaskActivity"
+            android:windowSoftInputMode="adjustResize" />
+
         <activity android:name=".ui.TaskDetailActivity" />
         <activity android:name=".ui.SelectLocationActivity" />
 

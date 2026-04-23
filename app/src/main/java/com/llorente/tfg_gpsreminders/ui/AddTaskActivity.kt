@@ -42,6 +42,12 @@ class AddTaskActivity : AppCompatActivity() {
     private var updatingReminderSwitchProgrammatically = false
 
     private lateinit var textViewSelectedPlace: TextView
+    private lateinit var buttonEditPlace: MaterialButton
+    private lateinit var textInputLayoutEditPlace: TextInputLayout
+    private lateinit var editTextPlaceName: TextInputEditText
+    private lateinit var buttonConfirmPlaceEdit: MaterialButton
+    private lateinit var buttonCancelPlaceEdit: MaterialButton
+
     private lateinit var textViewSelectedLocation: TextView
     private lateinit var buttonRemoveLocation: MaterialButton
     private lateinit var reminderOptionsContainer: LinearLayout
@@ -65,7 +71,12 @@ class AddTaskActivity : AppCompatActivity() {
             }
 
             updateLocationUI()
+            hidePlaceEditMode()
             renderReminderSection()
+
+            if (!taskLocationReminderEnabled) {
+                requestPermissionsForLocationReminder()
+            }
         }
 
     private val permissionLauncher =
@@ -116,6 +127,12 @@ class AddTaskActivity : AppCompatActivity() {
         val buttonSaveTask = findViewById<MaterialButton>(R.id.buttonSaveTask)
 
         textViewSelectedPlace = findViewById(R.id.textViewSelectedPlace)
+        buttonEditPlace = findViewById(R.id.buttonEditPlace)
+        textInputLayoutEditPlace = findViewById(R.id.textInputLayoutEditPlace)
+        editTextPlaceName = findViewById(R.id.editTextPlaceName)
+        buttonConfirmPlaceEdit = findViewById(R.id.buttonConfirmPlaceEdit)
+        buttonCancelPlaceEdit = findViewById(R.id.buttonCancelPlaceEdit)
+
         textViewSelectedLocation = findViewById(R.id.textViewSelectedLocation)
         reminderOptionsContainer = findViewById(R.id.reminderOptionsContainer)
         switchLocationReminder = findViewById(R.id.switchLocationReminder)
@@ -128,6 +145,7 @@ class AddTaskActivity : AppCompatActivity() {
 
         readIntentData()
         updateLocationUI()
+        hidePlaceEditMode()
         renderReminderSection()
 
         if (isEditMode) {
@@ -147,6 +165,18 @@ class AddTaskActivity : AppCompatActivity() {
 
         buttonRemoveLocation.setOnClickListener {
             showRemoveLocationConfirmationDialog()
+        }
+
+        buttonEditPlace.setOnClickListener {
+            showPlaceEditMode()
+        }
+
+        buttonConfirmPlaceEdit.setOnClickListener {
+            confirmPlaceEdit()
+        }
+
+        buttonCancelPlaceEdit.setOnClickListener {
+            cancelPlaceEdit()
         }
 
         switchLocationReminder.setOnCheckedChangeListener { _, isChecked ->
@@ -181,6 +211,10 @@ class AddTaskActivity : AppCompatActivity() {
             }
 
             textInputLayoutTitle.error = null
+
+            if (textInputLayoutEditPlace.visibility == View.VISIBLE) {
+                confirmPlaceEdit()
+            }
 
             val radiusValue = getValidatedRadiusOrNull()
             if (switchLocationReminder.isChecked && radiusValue == null) {
@@ -274,7 +308,11 @@ class AddTaskActivity : AppCompatActivity() {
         if (!hasLocation) {
             textViewSelectedPlace.text = "Sin lugar asociado"
             textViewSelectedLocation.text = "Sin ubicación asociada"
+            buttonEditPlace.visibility = View.GONE
             buttonRemoveLocation.visibility = View.GONE
+            textInputLayoutEditPlace.visibility = View.GONE
+            buttonConfirmPlaceEdit.visibility = View.GONE
+            buttonCancelPlaceEdit.visibility = View.GONE
             reminderOptionsContainer.visibility = View.GONE
             taskLocationReminderEnabled = false
             updateReminderSwitch(false)
@@ -283,6 +321,7 @@ class AddTaskActivity : AppCompatActivity() {
 
         textViewSelectedPlace.text = buildPlaceText()
         textViewSelectedLocation.text = buildLocationText()
+        buttonEditPlace.visibility = View.VISIBLE
         buttonRemoveLocation.visibility = View.VISIBLE
         reminderOptionsContainer.visibility = View.VISIBLE
     }
@@ -329,6 +368,44 @@ class AddTaskActivity : AppCompatActivity() {
         return "Latitud: $latitudeText\nLongitud: $longitudeText"
     }
 
+    private fun showPlaceEditMode() {
+        if (!hasLocationSelected()) {
+            return
+        }
+
+        textInputLayoutEditPlace.visibility = View.VISIBLE
+        buttonConfirmPlaceEdit.visibility = View.VISIBLE
+        buttonCancelPlaceEdit.visibility = View.VISIBLE
+
+        textViewSelectedPlace.visibility = View.GONE
+        buttonEditPlace.visibility = View.GONE
+
+        editTextPlaceName.setText(taskLocationName.orEmpty())
+        editTextPlaceName.requestFocus()
+        editTextPlaceName.setSelection(editTextPlaceName.text?.length ?: 0)
+    }
+
+    private fun hidePlaceEditMode() {
+        textInputLayoutEditPlace.visibility = View.GONE
+        buttonConfirmPlaceEdit.visibility = View.GONE
+        buttonCancelPlaceEdit.visibility = View.GONE
+
+        textViewSelectedPlace.visibility = View.VISIBLE
+        buttonEditPlace.visibility = if (hasLocationSelected()) View.VISIBLE else View.GONE
+    }
+
+    private fun confirmPlaceEdit() {
+        val newValue = editTextPlaceName.text?.toString()?.trim().orEmpty()
+        taskLocationName = if (newValue.isEmpty()) null else newValue
+        textViewSelectedPlace.text = buildPlaceText()
+        hidePlaceEditMode()
+    }
+
+    private fun cancelPlaceEdit() {
+        editTextPlaceName.setText(taskLocationName.orEmpty())
+        hidePlaceEditMode()
+    }
+
     private fun showRemoveLocationConfirmationDialog() {
         MaterialAlertDialogBuilder(this)
             .setTitle("Quitar ubicación")
@@ -349,6 +426,7 @@ class AddTaskActivity : AppCompatActivity() {
         taskLocationReminderEnabled = false
 
         updateLocationUI()
+        hidePlaceEditMode()
         renderReminderSection()
 
         Toast.makeText(this, "Ubicación eliminada", Toast.LENGTH_SHORT).show()
@@ -423,6 +501,7 @@ class AddTaskActivity : AppCompatActivity() {
             editTextRadius.setText(taskRadius!!.toInt().toString())
         }
 
+        renderReminderSection()
         updateReminderSwitch(true)
         Toast.makeText(this, "Recordatorio por ubicación activado", Toast.LENGTH_SHORT).show()
     }
