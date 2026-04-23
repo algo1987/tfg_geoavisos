@@ -5,8 +5,8 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.graphics.Color
 import android.os.Bundle
-import android.os.CancellationSignal
 import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
@@ -17,16 +17,15 @@ import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.location.Priority
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMap
 import com.google.android.gms.maps.OnMapReadyCallback
 import com.google.android.gms.maps.SupportMapFragment
 import com.google.android.gms.maps.model.Circle
 import com.google.android.gms.maps.model.CircleOptions
-import android.graphics.Color
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.MarkerOptions
+import com.google.android.gms.maps.model.PointOfInterest
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.model.Place
 import com.google.android.libraries.places.api.net.FetchPlaceRequest
@@ -111,13 +110,26 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap?.uiSettings?.isZoomGesturesEnabled = true
         googleMap?.uiSettings?.isScrollGesturesEnabled = true
 
+        // Selección manual de cualquier punto del mapa
         googleMap?.setOnMapClickListener { latLng ->
             selectedLatLng = latLng
             selectedPlaceName = "Desconocido"
             selectedAddress = null
 
+            suppressSearchTextWatcher = true
+            editTextSearchLocation.setText("")
+            suppressSearchTextWatcher = false
+
+            predictionAdapter.updateItems(emptyList())
+            recyclerViewPredictions.visibility = View.GONE
+
             updateMarkerAndCamera(latLng, selectedPlaceName)
             updateSelectionUI()
+        }
+
+        // Selección directa de POIs visibles en el mapa
+        googleMap?.setOnPoiClickListener { poi ->
+            fetchPoiDetails(poi)
         }
 
         enableMyLocationIfGranted()
@@ -144,7 +156,6 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun setupSearchField() {
         editTextSearchLocation.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) = Unit
-
             override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) = Unit
 
             override fun afterTextChanged(s: Editable?) {
@@ -176,7 +187,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                     LocationPredictionItem(
                         placeId = prediction.placeId,
                         primaryText = prediction.getPrimaryText(null).toString(),
-                        secondaryText = prediction.getSecondaryText(null)?.toString()
+                        secondaryText = prediction.getSecondaryText(null).toString()
                     )
                 }
 
@@ -255,6 +266,57 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             }
     }
 
+    private fun fetchPoiDetails(poi: PointOfInterest) {
+        val placeFields = listOf(
+            Place.Field.ID,
+            Place.Field.DISPLAY_NAME,
+            Place.Field.FORMATTED_ADDRESS,
+            Place.Field.LAT_LNG
+        )
+
+        val request = FetchPlaceRequest.builder(poi.placeId, placeFields).build()
+
+        placesClient.fetchPlace(request)
+            .addOnSuccessListener { response ->
+                val place = response.place
+                val latLng = place.latLng ?: poi.latLng
+
+                selectedLatLng = latLng
+                selectedPlaceName = place.displayName
+                selectedAddress = place.formattedAddress
+
+                suppressSearchTextWatcher = true
+                editTextSearchLocation.setText(selectedPlaceName ?: "")
+                editTextSearchLocation.setSelection(editTextSearchLocation.text?.length ?: 0)
+                suppressSearchTextWatcher = false
+
+                predictionAdapter.updateItems(emptyList())
+                recyclerViewPredictions.visibility = View.GONE
+
+                updateMarkerAndCamera(latLng, selectedAddress ?: selectedPlaceName)
+                updateSelectionUI()
+            }
+            .addOnFailureListener {
+
+                // 🔥 AQUÍ el cambio importante
+                val latLng = poi.latLng
+
+                selectedLatLng = latLng
+                selectedPlaceName = null
+                selectedAddress = null
+
+                suppressSearchTextWatcher = true
+                editTextSearchLocation.setText("")
+                suppressSearchTextWatcher = false
+
+                predictionAdapter.updateItems(emptyList())
+                recyclerViewPredictions.visibility = View.GONE
+
+                updateMarkerAndCamera(latLng, "Ubicación seleccionada")
+                updateSelectionUI()
+            }
+    }
+
     private fun initializePlacesIfNeeded() {
         if (Places.isInitialized()) {
             return
@@ -277,6 +339,8 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun readInitialLocationFromIntent() {
+        selectedRadius = intent.getFloatExtra("task_radius", 150f)
+
         if (intent.hasExtra("task_latitude") && intent.hasExtra("task_longitude")) {
             val latitude = intent.getDoubleExtra("task_latitude", 0.0)
             val longitude = intent.getDoubleExtra("task_longitude", 0.0)
@@ -284,7 +348,6 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             selectedLatLng = LatLng(latitude, longitude)
             selectedPlaceName = intent.getStringExtra("task_location_name")
             selectedAddress = intent.getStringExtra("task_location_address")
-            selectedRadius = intent.getFloatExtra("task_radius", 150f)
         }
     }
 
@@ -317,7 +380,6 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     @SuppressLint("MissingPermission")
     private fun requestFreshCurrentLocation() {
-
         val locationRequest = com.google.android.gms.location.LocationRequest.Builder(
             com.google.android.gms.location.Priority.PRIORITY_HIGH_ACCURACY,
             1000
@@ -357,6 +419,13 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         selectedPlaceName = "Ubicación actual"
         selectedAddress = null
 
+        suppressSearchTextWatcher = true
+        editTextSearchLocation.setText("")
+        suppressSearchTextWatcher = false
+
+        predictionAdapter.updateItems(emptyList())
+        recyclerViewPredictions.visibility = View.GONE
+
         updateMarkerAndCamera(latLng, selectedPlaceName)
         updateSelectionUI()
     }
@@ -364,14 +433,12 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     private fun updateMarkerAndCamera(latLng: LatLng, title: String?) {
         googleMap?.clear()
 
-        // Marker
         googleMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
                 .title(title ?: "Ubicación seleccionada")
         )
 
-        // 👇 Circulo de la geovalla
         circle = googleMap?.addCircle(
             CircleOptions()
                 .center(latLng)
@@ -382,8 +449,8 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         )
 
         val zoom = when {
-            selectedRadius <= 150 -> 17f
-            selectedRadius <= 300 -> 15.5f
+            selectedRadius <= 150f -> 17f
+            selectedRadius <= 300f -> 15.5f
             else -> 14f
         }
 
