@@ -24,6 +24,8 @@ import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import com.llorente.tfg_gpsreminders.geofencing.GeofenceSyncManager
 import kotlinx.coroutines.launch
+import android.view.inputmethod.InputMethodManager
+import androidx.core.content.getSystemService
 
 class AddTaskActivity : AppCompatActivity() {
 
@@ -383,9 +385,17 @@ class AddTaskActivity : AppCompatActivity() {
         editTextPlaceName.setText(taskLocationName.orEmpty())
         editTextPlaceName.requestFocus()
         editTextPlaceName.setSelection(editTextPlaceName.text?.length ?: 0)
+
+        editTextPlaceName.post {
+            val imm = getSystemService<InputMethodManager>()
+            imm?.showSoftInput(editTextPlaceName, InputMethodManager.SHOW_IMPLICIT)
+        }
     }
 
     private fun hidePlaceEditMode() {
+        val imm = getSystemService<InputMethodManager>()
+        imm?.hideSoftInputFromWindow(editTextPlaceName.windowToken, 0)
+
         textInputLayoutEditPlace.visibility = View.GONE
         buttonConfirmPlaceEdit.visibility = View.GONE
         buttonCancelPlaceEdit.visibility = View.GONE
