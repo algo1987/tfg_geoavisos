@@ -35,7 +35,7 @@ import com.google.android.material.appbar.MaterialToolbar
 import com.google.android.material.button.MaterialButton
 import com.google.android.material.textfield.TextInputEditText
 import com.llorente.tfg_gpsreminders.R
-import java.util.Locale
+import com.llorente.tfg_gpsreminders.utils.LocationUtils
 
 class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
@@ -110,10 +110,10 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap?.uiSettings?.isZoomGesturesEnabled = true
         googleMap?.uiSettings?.isScrollGesturesEnabled = true
 
-        // Selección manual de cualquier punto del mapa
+        // Seleccion manual de cualquier punto del mapa
         googleMap?.setOnMapClickListener { latLng ->
             selectedLatLng = latLng
-            selectedPlaceName = "Desconocido"
+            selectedPlaceName = "Selección manual"
             selectedAddress = null
 
             suppressSearchTextWatcher = true
@@ -298,11 +298,10 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             }
             .addOnFailureListener {
 
-                // 🔥 AQUÍ el cambio importante
                 val latLng = poi.latLng
 
                 selectedLatLng = latLng
-                selectedPlaceName = null
+                selectedPlaceName = "Selección manual"
                 selectedAddress = null
 
                 suppressSearchTextWatcher = true
@@ -312,7 +311,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 predictionAdapter.updateItems(emptyList())
                 recyclerViewPredictions.visibility = View.GONE
 
-                updateMarkerAndCamera(latLng, "Ubicación seleccionada")
+                updateMarkerAndCamera(latLng, "Selección manual")
                 updateSelectionUI()
             }
     }
@@ -487,9 +486,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun buildManualPlaceName(latLng: LatLng): String {
-        val lat = String.format(Locale.US, "%.5f", latLng.latitude)
-        val lng = String.format(Locale.US, "%.5f", latLng.longitude)
-        return "Desconocido. Lat: $lat, Lon: $lng"
+        return "Selección manual. ${LocationUtils.formatCoordinatesInline(latLng.latitude, latLng.longitude)}"
     }
 
     private fun returnSelectedLocation() {
@@ -498,7 +495,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         val resultIntent = Intent().apply {
             putExtra("selected_latitude", latLng.latitude)
             putExtra("selected_longitude", latLng.longitude)
-            putExtra("selected_place_name", selectedPlaceName)
+            putExtra("selected_place_name", LocationUtils.normalizePlaceName(selectedPlaceName))
             putExtra("selected_address", selectedAddress)
         }
 

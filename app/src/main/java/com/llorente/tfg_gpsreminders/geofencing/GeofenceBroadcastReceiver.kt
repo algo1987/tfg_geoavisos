@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.content.SharedPreferences
+import android.location.Location
 import android.util.Log
 import com.google.android.gms.location.Geofence
 import com.google.android.gms.location.GeofencingEvent
@@ -41,6 +42,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 }
 
                 val transition = geofencingEvent.geofenceTransition
+                val triggeringLocation = geofencingEvent.triggeringLocation
 
                 val transitionText = when (transition) {
                     Geofence.GEOFENCE_TRANSITION_ENTER -> "ENTER"
@@ -50,6 +52,7 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 }
 
                 Log.d(TAG, "Transition type: $transitionText")
+                Log.d(TAG, "Triggering location: $triggeringLocation")
 
                 val triggeringGeofences = geofencingEvent.triggeringGeofences ?: emptyList()
                 Log.d(TAG, "Geovallas activadas: ${triggeringGeofences.size}")
@@ -73,8 +76,23 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                             }
 
                             if (!task.isCompleted && task.isLocationReminderEnabled) {
-                                Log.d(TAG, "Mostrando notificación para taskId=${task.id}")
-                                TaskNotificationHelper.showTaskNotification(context.applicationContext, task)
+                                val distanceToGeofenceCenter = calculateDistanceToTaskLocation(
+                                    triggeringLocation = triggeringLocation,
+                                    taskLatitude = task.latitude,
+                                    taskLongitude = task.longitude
+                                )
+
+                                Log.d(
+                                    TAG,
+                                    "Mostrando notificación para taskId=${task.id}. Distancia al centro=$distanceToGeofenceCenter metros"
+                                )
+
+                                TaskNotificationHelper.showTaskNotification(
+                                    context = context.applicationContext,
+                                    task = task,
+                                    distanceToGeofenceCenterMeters = distanceToGeofenceCenter
+                                )
+
                                 markTaskAsInside(prefs, taskId)
                             } else {
                                 Log.d(TAG, "La tarea ya no es válida para notificación")
@@ -96,6 +114,28 @@ class GeofenceBroadcastReceiver : BroadcastReceiver() {
                 pendingResult.finish()
             }
         }
+    }
+
+    private fun calculateDistanceToTaskLocation(
+        triggeringLocation: Location?,
+        taskLatitude: Double?,
+        taskLongitude: Double?
+    ): Int? {
+        if (triggeringLocation == null || taskLatitude == null || taskLongitude == null) {
+            return null
+        }
+
+        val results = FloatArray(1)
+
+        Location.distanceBetween(
+            triggeringLocation.latitude,
+            triggeringLocation.longitude,
+            taskLatitude,
+            taskLongitude,
+            results
+        )
+
+        return results[0].toInt()
     }
 
     private fun getPrefs(context: Context): SharedPreferences {

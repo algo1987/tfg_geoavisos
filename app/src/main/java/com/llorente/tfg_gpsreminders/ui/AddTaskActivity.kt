@@ -23,6 +23,7 @@ import com.google.android.material.textfield.TextInputLayout
 import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import com.llorente.tfg_gpsreminders.geofencing.GeofenceSyncManager
+import com.llorente.tfg_gpsreminders.utils.LocationUtils
 import kotlinx.coroutines.launch
 import android.view.inputmethod.InputMethodManager
 import androidx.core.content.getSystemService
@@ -65,7 +66,9 @@ class AddTaskActivity : AppCompatActivity() {
 
             taskLatitude = result.data?.getDoubleExtra("selected_latitude", 0.0)
             taskLongitude = result.data?.getDoubleExtra("selected_longitude", 0.0)
-            taskLocationName = result.data?.getStringExtra("selected_place_name")
+            taskLocationName = LocationUtils.normalizePlaceName(
+                result.data?.getStringExtra("selected_place_name")
+            )
             taskLocationAddress = result.data?.getStringExtra("selected_address")
 
             if (taskRadius == null) {
@@ -293,7 +296,9 @@ class AddTaskActivity : AppCompatActivity() {
             taskLongitude = intent.getDoubleExtra("task_longitude", 0.0)
         }
 
-        taskLocationName = intent.getStringExtra("task_location_name")
+        taskLocationName = LocationUtils.normalizePlaceName(
+            intent.getStringExtra("task_location_name")
+        )
         taskLocationAddress = intent.getStringExtra("task_location_address")
 
         if (intent.hasExtra("task_radius")) {
@@ -352,11 +357,13 @@ class AddTaskActivity : AppCompatActivity() {
     }
 
     private fun buildPlaceText(): String {
-        return if (!taskLocationName.isNullOrBlank()) {
-            taskLocationName!!
-        } else {
-            "Sin lugar asociado"
-        }
+        return LocationUtils.buildLocationLabel(
+            placeName = taskLocationName,
+            address = null,
+            latitude = taskLatitude,
+            longitude = taskLongitude,
+            emptyText = "Sin lugar asociado"
+        )
     }
 
     private fun buildLocationText(): String {
@@ -364,10 +371,7 @@ class AddTaskActivity : AppCompatActivity() {
             return taskLocationAddress!!
         }
 
-        val latitudeText = taskLatitude?.toString() ?: "-"
-        val longitudeText = taskLongitude?.toString() ?: "-"
-
-        return "Latitud: $latitudeText\nLongitud: $longitudeText"
+        return LocationUtils.formatCoordinates(taskLatitude, taskLongitude)
     }
 
     private fun showPlaceEditMode() {
@@ -406,7 +410,9 @@ class AddTaskActivity : AppCompatActivity() {
 
     private fun confirmPlaceEdit() {
         val newValue = editTextPlaceName.text?.toString()?.trim().orEmpty()
-        taskLocationName = if (newValue.isEmpty()) null else newValue
+        taskLocationName = LocationUtils.normalizePlaceName(
+            if (newValue.isEmpty()) null else newValue
+        )
         textViewSelectedPlace.text = buildPlaceText()
         hidePlaceEditMode()
     }

@@ -23,6 +23,7 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import com.llorente.tfg_gpsreminders.geofencing.GeofenceSyncManager
+import com.llorente.tfg_gpsreminders.utils.LocationUtils
 import kotlinx.coroutines.launch
 
 class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
@@ -164,16 +165,18 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         textViewTaskDescription.text = task.description ?: "Sin descripción"
         textViewTaskStatus.text = if (task.isCompleted) "Completada" else "Pendiente"
 
-        textViewTaskPlace.text = if (!task.locationName.isNullOrBlank()) {
-            task.locationName
-        } else {
-            "Sin lugar asociado"
-        }
+        textViewTaskPlace.text = LocationUtils.buildLocationLabel(
+            placeName = task.locationName,
+            address = null,
+            latitude = task.latitude,
+            longitude = task.longitude,
+            emptyText = "Sin lugar asociado"
+        )
 
         textViewTaskLocation.text = when {
             !task.locationAddress.isNullOrBlank() -> task.locationAddress
             task.latitude != null && task.longitude != null ->
-                "Latitud: ${task.latitude}\nLongitud: ${task.longitude}"
+                LocationUtils.formatCoordinates(task.latitude, task.longitude)
             else -> "Sin ubicación asociada"
         }
 
@@ -208,7 +211,7 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
-                .title(task.locationName ?: "Ubicación")
+                .title(LocationUtils.buildLocationLabel(task.locationName, null, task.latitude, task.longitude, "Ubicación"))
         )
 
         circle = googleMap?.addCircle(
