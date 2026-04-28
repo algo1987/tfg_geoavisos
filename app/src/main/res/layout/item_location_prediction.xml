@@ -17,7 +17,7 @@
             android:id="@+id/textViewPredictionTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="Título"
+            android:text="@string/label_title"
             android:textSize="15sp"
             android:textStyle="bold" />
 
@@ -26,7 +26,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
-            android:text="Descripción"
+            android:text="@string/label_description"
             android:textSize="13sp" />
     </LinearLayout>
 

@@ -25,6 +25,8 @@ class MainActivity : AppCompatActivity() {
     private val taskViewModel: TaskViewModel by viewModels()
     private lateinit var taskAdapter: TaskAdapter
 
+    private var isTaskListEmpty: Boolean = true
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
@@ -72,17 +74,29 @@ class MainActivity : AppCompatActivity() {
         }
 
         taskViewModel.allTasks.observe(this) { tasks ->
+            isTaskListEmpty = tasks.isEmpty()
+
             taskAdapter.updateTasks(tasks)
-            textViewEmptyState.visibility = if (tasks.isEmpty()) View.VISIBLE else View.GONE
+            textViewEmptyState.visibility = if (isTaskListEmpty) View.VISIBLE else View.GONE
         }
 
         fabAddTask.setOnClickListener {
-            startActivity(Intent(this, AddTaskActivity::class.java))
+            openAddTaskScreen()
+        }
+
+        textViewEmptyState.setOnClickListener {
+            if (isTaskListEmpty) {
+                openAddTaskScreen()
+            }
         }
     }
 
     override fun onResume() {
         super.onResume()
         GeofenceSyncManager.syncAllGeofences(this)
+    }
+
+    private fun openAddTaskScreen() {
+        startActivity(Intent(this, AddTaskActivity::class.java))
     }
 }

@@ -110,10 +110,10 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap?.uiSettings?.isZoomGesturesEnabled = true
         googleMap?.uiSettings?.isScrollGesturesEnabled = true
 
-        // Seleccion manual de cualquier punto del mapa
+        // Selección pulsando cualquier punto del mapa
         googleMap?.setOnMapClickListener { latLng ->
             selectedLatLng = latLng
-            selectedPlaceName = "Selección manual"
+            selectedPlaceName = "Selección personalizada"
             selectedAddress = null
 
             suppressSearchTextWatcher = true
@@ -127,7 +127,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             updateSelectionUI()
         }
 
-        // Selección directa de POIs visibles en el mapa
+        // Selección de un lugar conocido, (POI), en el mapa
         googleMap?.setOnPoiClickListener { poi ->
             fetchPoiDetails(poi)
         }
@@ -301,7 +301,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 val latLng = poi.latLng
 
                 selectedLatLng = latLng
-                selectedPlaceName = "Selección manual"
+                selectedPlaceName = "Selección personalizada"
                 selectedAddress = null
 
                 suppressSearchTextWatcher = true
@@ -311,7 +311,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 predictionAdapter.updateItems(emptyList())
                 recyclerViewPredictions.visibility = View.GONE
 
-                updateMarkerAndCamera(latLng, "Selección manual")
+                updateMarkerAndCamera(latLng, "Selección personalizada")
                 updateSelectionUI()
             }
     }
@@ -486,7 +486,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
     }
 
     private fun buildManualPlaceName(latLng: LatLng): String {
-        return "Selección manual. ${LocationUtils.formatCoordinatesInline(latLng.latitude, latLng.longitude)}"
+        return "Selección personalizada. ${LocationUtils.formatCoordinatesInline(latLng.latitude, latLng.longitude)}"
     }
 
     private fun returnSelectedLocation() {

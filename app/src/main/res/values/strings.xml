@@ -1,3 +1,51 @@
 <resources>
-    <string name="app_name">TFG_GpsReminders</string>
+    <string name="app_name">GPS Reminders</string>
+
+    <string name="title_main">Mis tareas</string>
+    <string name="title_add_task">Nueva tarea</string>
+    <string name="title_task_detail">Detalle de tarea</string>
+    <string name="title_select_location">Seleccionar ubicación</string>
+
+    <string name="empty_tasks_message">No tienes tareas aún.\nPulsa aquí o usa + para crear una tarea.</string>
+    <string name="add_task">Añadir tarea</string>
+
+    <string name="label_title">Título</string>
+    <string name="label_description">Descripción</string>
+    <string name="label_status">Estado</string>
+    <string name="label_place">Lugar</string>
+    <string name="label_location">Ubicación</string>
+    <string name="label_map">Mapa</string>
+    <string name="label_location_reminder">Recordatorio por ubicación</string>
+    <string name="label_activation_radius">Radio de activación</string>
+
+    <string name="hint_edit_place">Editar lugar</string>
+    <string name="hint_search_location">Buscar dirección o lugar</string>
+    <string name="hint_activation_radius">Radio de activación (metros)</string>
+
+    <string name="task_title_placeholder">Título de la tarea</string>
+    <string name="task_description_placeholder">Descripción de la tarea</string>
+    <string name="task_item_title_placeholder">Título tarea</string>
+
+    <string name="status_pending">Pendiente</string>
+    <string name="status_completed">Completada</string>
+    <string name="status_disabled">Desactivado</string>
+
+    <string name="no_place_selected">Sin lugar asociado</string>
+    <string name="no_location_selected">Sin ubicación asociada</string>
+    <string name="no_location_selected_short">No seleccionado</string>
+    <string name="no_location_chosen">No se ha seleccionado ninguna ubicación</string>
+    <string name="not_configured">No configurado</string>
+
+    <string name="button_save_task">Guardar tarea</string>
+    <string name="button_edit_task">Editar tarea</string>
+    <string name="button_delete_task">Eliminar tarea</string>
+    <string name="button_delete">Borrar</string>
+    <string name="button_cancel">Cancelar</string>
+    <string name="button_accept">Aceptar</string>
+    <string name="button_select_location">Seleccionar ubicación</string>
+    <string name="button_remove_location">Quitar ubicación</string>
+    <string name="button_confirm_location">Confirmar ubicación</string>
+    <string name="button_use_current_location">Usar mi ubicación actual</string>
+
+    <string name="switch_location_reminder">Activar aviso automático al entrar en la zona</string>
 </resources>

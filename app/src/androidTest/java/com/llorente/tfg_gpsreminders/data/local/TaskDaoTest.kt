@@ -85,7 +85,7 @@ class TaskDaoTest {
         assertTrue(tasks.isEmpty())
     }
 
-    // Test para comprobar orden
+    // Test para comprobar cómo se ordenan las tareas
     @Test
     fun getAllTasks_returnsTasksOrderedByIdDesc() = runBlocking {
         val task1 = TaskEntity(title = "Tarea 1")
@@ -97,12 +97,12 @@ class TaskDaoTest {
         val tasks = taskDao.getAllTasksList()
 
         assertEquals(2, tasks.size)
-        assertEquals("Tarea 2", tasks[0].title) // la más reciente primero
+        assertEquals("Tarea 2", tasks[0].title) // Por orden de llegada, de la mas reciente a la mas antigua.
         assertEquals("Tarea 1", tasks[1].title)
     }
 
 
-    // Test de campo opcional
+    // Test del campo Descripción opcional
     @Test
     fun insertTask_withNullDescription_worksCorrectly() = runBlocking {
         val task = TaskEntity(title = "Sin descripción")
@@ -124,11 +124,11 @@ class TaskDaoTest {
     @Test
     fun insertTask_withLocation_savesAllLocationFields() = runBlocking {
         val task = TaskEntity(
-            title = "Comprar en Alcampo",
+            title = "Comprar en Supermercado X",
             description = "Ir al supermercado",
             latitude = 40.4015,
             longitude = -3.7026,
-            locationName = "Alcampo",
+            locationName = "Supermercado X",
             locationAddress = "Calle del Ejemplo, 2, Madrid, Spain"
         )
 
@@ -136,11 +136,11 @@ class TaskDaoTest {
         val tasks = taskDao.getAllTasksList()
 
         assertEquals(1, tasks.size)
-        assertEquals("Comprar en Alcampo", tasks[0].title)
+        assertEquals("Comprar en Supermercado X", tasks[0].title)
         assertEquals("Ir al supermercado", tasks[0].description)
         assertEquals(40.4015, tasks[0].latitude!!, 0.0001)
         assertEquals(-3.7026, tasks[0].longitude!!, 0.0001)
-        assertEquals("Alcampo", tasks[0].locationName)
+        assertEquals("Supermercado X", tasks[0].locationName)
         assertEquals(
             "Calle del Ejemplo, 2, Madrid, Spain",
             tasks[0].locationAddress
@@ -160,7 +160,7 @@ class TaskDaoTest {
         val updatedTask = insertedTask.copy(
             latitude = 40.4020,
             longitude = -3.7030,
-            locationName = "Mercadona",
+            locationName = "Supermercado Y",
             locationAddress = "Calle del Ejemplo, 10, Madrid, Spain"
         )
 

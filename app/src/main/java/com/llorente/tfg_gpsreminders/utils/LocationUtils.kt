@@ -47,7 +47,7 @@ object LocationUtils {
         address: String?,
         latitude: Double?,
         longitude: Double?,
-        emptyText: String = "No seleccionado"
+        emptyText: String = "No seleccionada"
     ): String {
         val normalizedPlaceName = normalizePlaceName(placeName)
         val cleanedAddress = address?.trim()

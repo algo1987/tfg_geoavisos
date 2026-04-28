@@ -115,7 +115,7 @@ class TaskAdapter(
             address = task.locationAddress,
             latitude = task.latitude,
             longitude = task.longitude,
-            emptyText = "No seleccionado"
+            emptyText = "No seleccionada"
         )
     }
 }

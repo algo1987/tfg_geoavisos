@@ -75,7 +75,7 @@ dependencies {
     // Coroutines
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.8.1")
 
-    // maps, places y posicion del dispositivo
+    // servicios maps, places y  de la posicion del dispositivo
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.android.libraries.places:places:4.4.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")
