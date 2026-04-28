@@ -3,7 +3,7 @@
 
     <string name="title_main">Mis tareas</string>
     <string name="title_add_task">Nueva tarea</string>
-    <string name="title_task_detail">Detalle de tarea</string>
+    <string name="title_task_detail">Detalle de la tarea</string>
     <string name="title_select_location">Seleccionar ubicación</string>
 
     <string name="empty_tasks_message">No tienes tareas aún.\nPulsa aquí o usa + para crear una tarea.</string>
@@ -48,4 +48,64 @@
     <string name="button_use_current_location">Usar mi ubicación actual</string>
 
     <string name="switch_location_reminder">Activar aviso automático al entrar en la zona</string>
+    <!-- Mensajes y acciones -->
+    <string name="dialog_delete_task_title">Eliminar tarea</string>
+    <string name="dialog_delete_task_message">¿Seguro que quieres eliminar esta tarea?</string>
+    <string name="button_delete_confirm">Eliminar</string>
+    <string name="title_edit_task">Editar tarea</string>
+    <string name="button_save_changes">Guardar cambios</string>
+    <string name="message_location_required">Primero hay que seleccionar una ubicación</string>
+    <string name="error_title_required">El título es obligatorio</string>
+    <string name="toast_task_updated">Tarea actualizada</string>
+    <string name="toast_task_saved">Tarea guardada</string>
+    <string name="toast_task_deleted">Tarea eliminada</string>
+    <string name="toast_task_load_error">No se pudo cargar la tarea</string>
+    <string name="toast_task_not_found">La tarea no existe</string>
+    <string name="toast_task_completed">Tarea completada</string>
+    <string name="toast_task_pending">Tarea pendiente</string>
+    <string name="toast_task_completed_from_notification">Tarea marcada como completada</string>
+
+    <string name="dialog_remove_location_title">Quitar ubicación</string>
+    <string name="dialog_remove_location_message">¿Seguro que quieres eliminar la ubicación asociada a esta tarea?</string>
+    <string name="button_remove">Quitar</string>
+    <string name="toast_location_removed">Ubicación eliminada</string>
+
+    <string name="error_invalid_radius">Introduce un radio válido en metros</string>
+    <string name="permission_location_required">Sin permiso de ubicación no se puede activar este recordatorio</string>
+    <string name="permission_notification_required">Sin permiso de notificaciones no se podrán mostrar los avisos</string>
+    <string name="permission_background_required">Hace falta permitir la ubicación en segundo plano para usar geovallas</string>
+    <string name="dialog_background_permission_title">Permiso en segundo plano</string>
+    <string name="dialog_background_permission_message">Para que la aplicación detecte la entrada en una zona aunque no esté abierta, es necesario permitir la ubicación en segundo plano.</string>
+    <string name="button_continue">Continuar</string>
+    <string name="location_reminder_not_enabled">No se ha podido activar el recordatorio por ubicación</string>
+    <string name="toast_location_reminder_enabled">Recordatorio por ubicación activado</string>
+
+    <string name="location_custom_selection">Selección personalizada</string>
+    <string name="location_current">Ubicación actual</string>
+    <string name="location_selected">Ubicación seleccionada</string>
+    <string name="location_icon_not_selected">📍 No seleccionado</string>
+    <string name="no_address_available">Sin dirección disponible</string>
+    <string name="zone_configured">zona configurada</string>
+
+    <string name="maps_api_key_missing">No se ha encontrado la API Key de Google Maps</string>
+    <string name="places_error">Error Places: %1$s</string>
+    <string name="place_location_not_found">No se pudo obtener la ubicación del lugar seleccionado</string>
+    <string name="place_detail_not_found">No se pudo obtener el detalle del lugar seleccionado</string>
+    <string name="current_location_not_found">No se pudo obtener la ubicación actual</string>
+    <string name="permission_location_function_required">Sin permisos de ubicación no se puede usar esta función</string>
+
+    <string name="no_description">Sin descripción</string>
+    <string name="no_description_added">Sin descripción añadida</string>
+    <string name="status_enabled">Activado</string>
+    <string name="radius_meters_format">%1$d metros</string>
+
+    <string name="notification_channel_name">Recordatorios por ubicación</string>
+    <string name="notification_channel_description">Notificaciones al entrar en una zona asociada a una tarea</string>
+    <string name="notification_title_task_nearby">Tarea pendiente cerca de ti</string>
+    <string name="notification_action_complete">Completar</string>
+    <string name="notification_radius_configured">Radio configurado: %1$d m</string>
+    <string name="notification_radius_unavailable">Radio configurado: no disponible</string>
+    <string name="notification_distance_to_point">Distancia aproximada al punto: %1$d m</string>
+    <string name="notification_distance_unavailable">Distancia aproximada al punto: no disponible</string>
+
 </resources>

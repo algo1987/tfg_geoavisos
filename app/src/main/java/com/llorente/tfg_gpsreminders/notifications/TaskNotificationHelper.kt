@@ -14,12 +14,11 @@ import androidx.core.content.ContextCompat
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import com.llorente.tfg_gpsreminders.ui.TaskDetailActivity
 import com.llorente.tfg_gpsreminders.utils.LocationUtils
+import com.llorente.tfg_gpsreminders.R
 
 object TaskNotificationHelper {
 
     private const val CHANNEL_ID = "task_location_reminders_channel"
-    private const val CHANNEL_NAME = "Recordatorios por ubicación"
-    private const val CHANNEL_DESCRIPTION = "Notificaciones al entrar en una zona asociada a una tarea"
 
     const val ACTION_COMPLETE_TASK_FROM_NOTIFICATION =
         "com.llorente.tfg_gpsreminders.ACTION_COMPLETE_TASK_FROM_NOTIFICATION"
@@ -31,10 +30,10 @@ object TaskNotificationHelper {
 
         val channel = NotificationChannel(
             CHANNEL_ID,
-            CHANNEL_NAME,
+            context.getString(R.string.notification_channel_name),
             NotificationManager.IMPORTANCE_HIGH
         ).apply {
-            description = CHANNEL_DESCRIPTION
+            description = context.getString(R.string.notification_channel_description)
         }
 
         val manager = context.getSystemService(NotificationManager::class.java)
@@ -84,13 +83,14 @@ object TaskNotificationHelper {
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
         )
 
-        val locationText = getLocationText(task)
-        val distanceText = formatDistance(distanceToGeofenceCenterMeters)
+        val locationText = getLocationText(context, task)
+        val distanceText = formatDistance(context, distanceToGeofenceCenterMeters)
 
-        val title = "Tarea pendiente cerca de ti"
+        val title = context.getString(R.string.notification_title_task_nearby)
         val contentText = "${task.title} · $locationText"
 
         val bigText = buildBigText(
+            context = context,
             task = task,
             locationText = locationText,
             distanceText = distanceText
@@ -106,7 +106,7 @@ object TaskNotificationHelper {
             .setContentIntent(openTaskPendingIntent)
             .addAction(
                 android.R.drawable.checkbox_on_background,
-                "Completar",
+                context.getString(R.string.notification_action_complete),
                 completePendingIntent
             )
             .build()
@@ -119,6 +119,7 @@ object TaskNotificationHelper {
     }
 
     private fun buildBigText(
+        context: Context,
         task: TaskEntity,
         locationText: String,
         distanceText: String
@@ -126,13 +127,16 @@ object TaskNotificationHelper {
         val descriptionPart = if (!task.description.isNullOrBlank()) {
             task.description
         } else {
-            "Sin descripción añadida"
+            context.getString(R.string.no_description_added)
         }
 
         val radiusPart = if (task.radius != null) {
-            "Radio configurado: ${task.radius.toInt()} m"
+            context.getString(
+                R.string.notification_radius_configured,
+                task.radius.toInt()
+            )
         } else {
-            "Radio configurado: no disponible"
+            context.getString((R.string.notification_radius_unavailable))
         }
 
         return """
@@ -146,21 +150,24 @@ object TaskNotificationHelper {
         """.trimIndent()
     }
 
-    private fun getLocationText(task: TaskEntity): String {
+    private fun getLocationText(context: Context, task: TaskEntity): String {
         return LocationUtils.buildLocationLabel(
             placeName = task.locationName,
             address = task.locationAddress,
             latitude = task.latitude,
             longitude = task.longitude,
-            emptyText = "zona configurada"
+            emptyText = context.getString(R.string.zone_configured)
         )
     }
 
-    private fun formatDistance(distanceToGeofenceCenterMeters: Int?): String {
+    private fun formatDistance(context: Context, distanceToGeofenceCenterMeters: Int?): String {
         return if (distanceToGeofenceCenterMeters != null) {
-            "Distancia aproximada al punto: $distanceToGeofenceCenterMeters m"
+            context.getString(
+                R.string.notification_distance_to_point,
+                distanceToGeofenceCenterMeters
+            )
         } else {
-            "Distancia aproximada al punto: no disponible"
+            context.getString(R.string.notification_distance_unavailable)
         }
     }
 }

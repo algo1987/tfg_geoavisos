@@ -71,7 +71,7 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         taskId = intent.getIntExtra("task_id", -1)
 
         if (taskId == -1) {
-            Toast.makeText(this, "No se pudo cargar la tarea", Toast.LENGTH_SHORT).show()
+            Toast.makeText(this, R.string.toast_task_load_error, Toast.LENGTH_SHORT).show()
             finish()
             return
         }
@@ -106,14 +106,14 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
         buttonDeleteTask.setOnClickListener {
             currentTask?.let { task ->
                 MaterialAlertDialogBuilder(this)
-                    .setTitle("Eliminar tarea")
-                    .setMessage("¿Seguro que quieres eliminar esta tarea?")
-                    .setNegativeButton("Cancelar", null)
-                    .setPositiveButton("Eliminar") { _, _ ->
+                    .setTitle(R.string.dialog_delete_task_title)
+                    .setMessage(R.string.dialog_delete_task_message)
+                    .setNegativeButton(R.string.button_cancel, null)
+                    .setPositiveButton(R.string.button_delete_confirm) { _, _ ->
                         lifecycleScope.launch {
                             taskViewModel.deleteTask(task)
                             GeofenceSyncManager.syncAllGeofences(this@TaskDetailActivity)
-                            Toast.makeText(this@TaskDetailActivity, "Tarea eliminada", Toast.LENGTH_SHORT).show()
+                            Toast.makeText(this@TaskDetailActivity, R.string.toast_task_deleted, Toast.LENGTH_SHORT).show()
                             finish()
                         }
                     }
@@ -149,7 +149,7 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
             if (task == null) {
                 Toast.makeText(
                     this@TaskDetailActivity,
-                    "La tarea no existe",
+                    getString(R.string.toast_task_not_found),
                     Toast.LENGTH_SHORT
                 ).show()
                 finish()
@@ -162,30 +162,30 @@ class TaskDetailActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun renderTask(task: TaskEntity) {
         textViewTaskTitle.text = task.title
-        textViewTaskDescription.text = task.description ?: "Sin descripción"
-        textViewTaskStatus.text = if (task.isCompleted) "Completada" else "Pendiente"
+        textViewTaskDescription.text = task.description ?: getString(R.string.no_description)
+        textViewTaskStatus.text = if (task.isCompleted) getString(R.string.status_completed) else getString(R.string.status_pending)
 
         textViewTaskPlace.text = LocationUtils.buildLocationLabel(
             placeName = task.locationName,
             address = null,
             latitude = task.latitude,
             longitude = task.longitude,
-            emptyText = "Sin lugar asociado"
+            emptyText = getString(R.string.no_place_selected)
         )
 
         textViewTaskLocation.text = when {
             !task.locationAddress.isNullOrBlank() -> task.locationAddress
             task.latitude != null && task.longitude != null ->
                 LocationUtils.formatCoordinates(task.latitude, task.longitude)
-            else -> "Sin ubicación asociada"
+            else -> getString(R.string.no_location_selected)
         }
 
         if (task.isLocationReminderEnabled) {
-            textViewReminderStatus.text = "Activado"
+            textViewReminderStatus.text = getString(R.string.status_enabled)
             textViewReminderRadius.text = "${(task.radius ?: 150f).toInt()} metros"
         } else {
-            textViewReminderStatus.text = "Desactivado"
-            textViewReminderRadius.text = "No configurado"
+            textViewReminderStatus.text = getString(R.string.status_disabled)
+            textViewReminderRadius.text = getString(R.string.not_configured)
         }
 
         renderMapIfNeeded(task)

@@ -113,7 +113,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         // Selección pulsando cualquier punto del mapa
         googleMap?.setOnMapClickListener { latLng ->
             selectedLatLng = latLng
-            selectedPlaceName = "Selección personalizada"
+            selectedPlaceName = getString(R.string.location_custom_selection)
             selectedAddress = null
 
             suppressSearchTextWatcher = true
@@ -230,7 +230,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (latLng == null) {
                     Toast.makeText(
                         this,
-                        "No se pudo obtener la ubicación del lugar seleccionado",
+                        getString(R.string.place_location_not_found),
                         Toast.LENGTH_SHORT
                     ).show()
                     return@addOnSuccessListener
@@ -260,7 +260,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
             .addOnFailureListener {
                 Toast.makeText(
                     this,
-                    "No se pudo obtener el detalle del lugar seleccionado",
+                    getString(R.string.place_detail_not_found),
                     Toast.LENGTH_SHORT
                 ).show()
             }
@@ -301,7 +301,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 val latLng = poi.latLng
 
                 selectedLatLng = latLng
-                selectedPlaceName = "Selección personalizada"
+                selectedPlaceName = getString(R.string.location_custom_selection)
                 selectedAddress = null
 
                 suppressSearchTextWatcher = true
@@ -311,7 +311,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 predictionAdapter.updateItems(emptyList())
                 recyclerViewPredictions.visibility = View.GONE
 
-                updateMarkerAndCamera(latLng, "Selección personalizada")
+                updateMarkerAndCamera(latLng, getString(R.string.location_custom_selection))
                 updateSelectionUI()
             }
     }
@@ -327,7 +327,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         if (apiKey.isBlank()) {
             Toast.makeText(
                 this,
-                "No se ha encontrado la API Key de Google Maps",
+                getString(R.string.maps_api_key_missing),
                 Toast.LENGTH_LONG
             ).show()
             finish()
@@ -393,7 +393,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
                 if (location == null) {
                     Toast.makeText(
                         this@SelectLocationActivity,
-                        "No se pudo obtener la ubicación actual",
+                        getString(R.string.current_location_not_found),
                         Toast.LENGTH_SHORT
                     ).show()
                     return
@@ -415,7 +415,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
 
     private fun applyCurrentLocation(latLng: LatLng) {
         selectedLatLng = latLng
-        selectedPlaceName = "Ubicación actual"
+        selectedPlaceName = getString(R.string.location_current)
         selectedAddress = null
 
         suppressSearchTextWatcher = true
@@ -435,7 +435,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         googleMap?.addMarker(
             MarkerOptions()
                 .position(latLng)
-                .title(title ?: "Ubicación seleccionada")
+                .title(title ?: getString(R.string.location_selected))
         )
 
         circle = googleMap?.addCircle(
@@ -460,7 +460,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         val latLng = selectedLatLng
 
         if (latLng == null) {
-            textViewLocationPreview.text = "No se ha seleccionado ninguna ubicación"
+            textViewLocationPreview.text = getString(R.string.no_location_chosen)
             buttonConfirmLocation.isEnabled = false
             return
         }
@@ -479,14 +479,14 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         val addressText = if (!selectedAddress.isNullOrBlank()) {
             selectedAddress
         } else {
-            "Sin dirección disponible"
+            getString(R.string.no_address_available)
         }
 
         return "$placeText\n$addressText"
     }
 
     private fun buildManualPlaceName(latLng: LatLng): String {
-        return "Selección personalizada. ${LocationUtils.formatCoordinatesInline(latLng.latitude, latLng.longitude)}"
+        return getString(R.string.location_custom_selection) + ". ${LocationUtils.formatCoordinatesInline(latLng.latitude, latLng.longitude)}"
     }
 
     private fun returnSelectedLocation() {
@@ -537,7 +537,7 @@ class SelectLocationActivity : AppCompatActivity(), OnMapReadyCallback {
         if (!granted) {
             Toast.makeText(
                 this,
-                "Sin permisos de ubicación no se puede usar esta función",
+                getString(R.string.permission_location_function_required),
                 Toast.LENGTH_SHORT
             ).show()
             return

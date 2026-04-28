@@ -97,12 +97,12 @@ class AddTaskActivity : AppCompatActivity() {
             }
 
             if (!fineGranted) {
-                disableReminderWithMessage("Sin permiso de ubicación no se puede activar este recordatorio")
+                disableReminderWithMessage(getString(R.string.permission_location_required))
                 return@registerForActivityResult
             }
 
             if (!notificationGranted) {
-                disableReminderWithMessage("Sin permiso de notificaciones no se podrán mostrar los avisos")
+                disableReminderWithMessage(getString(R.string.permission_notification_required))
                 return@registerForActivityResult
             }
 
@@ -112,7 +112,7 @@ class AddTaskActivity : AppCompatActivity() {
     private val backgroundLocationLauncher =
         registerForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q && !granted) {
-                disableReminderWithMessage("Hace falta permitir la ubicación en segundo plano para usar geovallas")
+                disableReminderWithMessage(getString(R.string.permission_background_required))
                 return@registerForActivityResult
             }
 
@@ -154,14 +154,14 @@ class AddTaskActivity : AppCompatActivity() {
         renderReminderSection()
 
         if (isEditMode) {
-            toolbar.title = "Editar tarea"
-            buttonSaveTask.text = "Guardar cambios"
+            toolbar.title = getString(R.string.title_edit_task)
+            buttonSaveTask.text = getString(R.string.button_save_changes)
 
             editTextTitle.setText(intent.getStringExtra("task_title").orEmpty())
             editTextDescription.setText(intent.getStringExtra("task_description").orEmpty())
         } else {
-            toolbar.title = "Nueva tarea"
-            buttonSaveTask.text = "Guardar tarea"
+            toolbar.title = getString(R.string.title_add_task)
+            buttonSaveTask.text = getString(R.string.button_save_task)
         }
 
         buttonSelectLocation.setOnClickListener {
@@ -193,7 +193,7 @@ class AddTaskActivity : AppCompatActivity() {
                 updateReminderSwitch(false)
                 Toast.makeText(
                     this,
-                    "Primero hay que seleccionar una ubicación",
+                    getString(R.string.message_location_required),
                     Toast.LENGTH_SHORT
                 ).show()
                 return@setOnCheckedChangeListener
@@ -211,7 +211,7 @@ class AddTaskActivity : AppCompatActivity() {
             val description = editTextDescription.text?.toString()?.trim().orEmpty()
 
             if (title.isEmpty()) {
-                textInputLayoutTitle.error = "El título es obligatorio"
+                textInputLayoutTitle.error = getString(R.string.error_title_required)
                 return@setOnClickListener
             }
 
@@ -256,10 +256,10 @@ class AddTaskActivity : AppCompatActivity() {
             lifecycleScope.launch {
                 if (isEditMode) {
                     taskViewModel.updateTask(taskToSave)
-                    Toast.makeText(this@AddTaskActivity, "Tarea actualizada", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@AddTaskActivity, R.string.toast_task_updated, Toast.LENGTH_SHORT).show()
                 } else {
                     taskViewModel.insertTask(taskToSave)
-                    Toast.makeText(this@AddTaskActivity, "Tarea guardada", Toast.LENGTH_SHORT).show()
+                    Toast.makeText(this@AddTaskActivity, R.string.toast_task_saved, Toast.LENGTH_SHORT).show()
                 }
 
                 GeofenceSyncManager.syncAllGeofences(this@AddTaskActivity)
@@ -313,8 +313,8 @@ class AddTaskActivity : AppCompatActivity() {
         val hasLocation = hasLocationSelected()
 
         if (!hasLocation) {
-            textViewSelectedPlace.text = "Sin lugar asociado"
-            textViewSelectedLocation.text = "Sin ubicación asociada"
+            textViewSelectedPlace.text = getString(R.string.no_place_selected)
+            textViewSelectedLocation.text = getString(R.string.no_location_selected)
             buttonEditPlace.visibility = View.GONE
             buttonRemoveLocation.visibility = View.GONE
             textInputLayoutEditPlace.visibility = View.GONE
@@ -362,7 +362,7 @@ class AddTaskActivity : AppCompatActivity() {
             address = null,
             latitude = taskLatitude,
             longitude = taskLongitude,
-            emptyText = "Sin lugar asociado"
+            emptyText = getString(R.string.no_place_selected)
         )
     }
 
@@ -424,10 +424,10 @@ class AddTaskActivity : AppCompatActivity() {
 
     private fun showRemoveLocationConfirmationDialog() {
         MaterialAlertDialogBuilder(this)
-            .setTitle("Quitar ubicación")
-            .setMessage("¿Seguro que quieres eliminar la ubicación asociada a esta tarea?")
-            .setNegativeButton("Cancelar", null)
-            .setPositiveButton("Quitar") { _, _ ->
+            .setTitle(R.string.dialog_remove_location_title)
+            .setMessage(R.string.dialog_remove_location_message)
+            .setNegativeButton(R.string.button_cancel, null)
+            .setPositiveButton(R.string.button_remove) { _, _ ->
                 clearLocation()
             }
             .show()
@@ -445,7 +445,7 @@ class AddTaskActivity : AppCompatActivity() {
         hidePlaceEditMode()
         renderReminderSection()
 
-        Toast.makeText(this, "Ubicación eliminada", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.toast_location_removed, Toast.LENGTH_SHORT).show()
     }
 
     private fun getValidatedRadiusOrNull(): Float? {
@@ -457,7 +457,7 @@ class AddTaskActivity : AppCompatActivity() {
         val radius = rawRadius.toFloatOrNull()
 
         if (radius == null || radius <= 0f) {
-            textInputLayoutRadius.error = "Introduce un radio válido en metros"
+            textInputLayoutRadius.error = getString(R.string.error_invalid_radius)
             return null
         }
 
@@ -492,12 +492,12 @@ class AddTaskActivity : AppCompatActivity() {
             !hasPermission(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
         ) {
             MaterialAlertDialogBuilder(this)
-                .setTitle("Permiso en segundo plano")
-                .setMessage("Para que la aplicación detecte la entrada en una zona aunque no esté abierta, es necesario permitir la ubicación en segundo plano.")
-                .setNegativeButton("Cancelar") { _, _ ->
-                    disableReminderWithMessage("No se ha podido activar el recordatorio por ubicación")
+                .setTitle(R.string.dialog_background_permission_title)
+                .setMessage(R.string.dialog_background_permission_message)
+                .setNegativeButton(R.string.button_cancel) { _, _ ->
+                    disableReminderWithMessage(getString(R.string.location_reminder_not_enabled))
                 }
-                .setPositiveButton("Continuar") { _, _ ->
+                .setPositiveButton(R.string.button_continue) { _, _ ->
                     backgroundLocationLauncher.launch(Manifest.permission.ACCESS_BACKGROUND_LOCATION)
                 }
                 .show()
@@ -519,7 +519,7 @@ class AddTaskActivity : AppCompatActivity() {
 
         renderReminderSection()
         updateReminderSwitch(true)
-        Toast.makeText(this, "Recordatorio por ubicación activado", Toast.LENGTH_SHORT).show()
+        Toast.makeText(this, R.string.toast_location_reminder_enabled, Toast.LENGTH_SHORT).show()
     }
 
     private fun disableReminderWithMessage(message: String) {

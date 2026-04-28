@@ -4,6 +4,7 @@ import android.content.BroadcastReceiver
 import android.content.Context
 import android.content.Intent
 import android.widget.Toast
+import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.AppDatabase
 import com.llorente.tfg_gpsreminders.geofencing.GeofenceSyncManager
 import kotlinx.coroutines.CoroutineScope
@@ -45,7 +46,7 @@ class TaskNotificationActionReceiver : BroadcastReceiver() {
                 CoroutineScope(Dispatchers.Main).launch {
                     Toast.makeText(
                         appContext,
-                        "Tarea marcada como completada",
+                        appContext.getString(R.string.toast_task_completed_from_notification),
                         Toast.LENGTH_SHORT
                     ).show()
                 }

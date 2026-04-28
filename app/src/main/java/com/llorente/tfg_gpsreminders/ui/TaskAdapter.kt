@@ -64,7 +64,8 @@ class TaskAdapter(
 
             Toast.makeText(
                 holder.itemView.context,
-                if (isChecked) "Tarea completada" else "Tarea pendiente",
+                if (isChecked) holder.itemView.context.getString(R.string.toast_task_completed)
+                        else holder.itemView.context.getString(R.string.toast_task_pending),
                 Toast.LENGTH_SHORT
             ).show()
         }
@@ -86,7 +87,7 @@ class TaskAdapter(
     }
 
     private fun applyCompletedStyle(holder: TaskViewHolder) {
-        holder.textViewStatus.text = "Completada"
+        holder.textViewStatus.text = holder.itemView.context.getString(R.string.status_completed)
         holder.textViewStatus.setBackgroundResource(R.drawable.bg_status_completed)
 
         holder.textViewTitle.paintFlags =
@@ -98,7 +99,7 @@ class TaskAdapter(
     }
 
     private fun applyPendingStyle(holder: TaskViewHolder) {
-        holder.textViewStatus.text = "Pendiente"
+        holder.textViewStatus.text = holder.itemView.context.getString(R.string.status_pending)
         holder.textViewStatus.setBackgroundResource(R.drawable.bg_status_pending)
 
         holder.textViewTitle.paintFlags =

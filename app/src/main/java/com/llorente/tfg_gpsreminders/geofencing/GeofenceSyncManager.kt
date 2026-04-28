@@ -114,6 +114,8 @@ object GeofenceSyncManager {
                 task.longitude!!,
                 task.radius ?: DEFAULT_RADIUS
             )
+            // Se esta utilizando ENTER y EXIT, para tratar de mejorar la fiabilidad en la detección, especialmente
+            // en transportes como coche o metro
             .setTransitionTypes(
                 Geofence.GEOFENCE_TRANSITION_ENTER or Geofence.GEOFENCE_TRANSITION_EXIT
             )

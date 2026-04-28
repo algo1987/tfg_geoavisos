@@ -6,6 +6,8 @@ object LocationUtils {
 
     private const val MANUAL_SELECTION_TEXT = "Selección personalizada"
 
+    // Las coordenadas se van a formatear con 4 decimales, solo en la vista de UI.
+    // La precisión completa se mantiene en base de datos.
     fun formatCoordinate(value: Double?): String {
         return if (value != null) {
             String.format(Locale.US, "%.4f", value)
