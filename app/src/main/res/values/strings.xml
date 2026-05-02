@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">GPS Reminders</string>
+    <string name="app_name">GeoAvisos</string>
 
     <string name="title_main">Mis tareas</string>
     <string name="title_add_task">Nueva tarea</string>
@@ -75,7 +75,7 @@
     <string name="permission_notification_required">Sin permiso de notificaciones no se podrán mostrar los avisos</string>
     <string name="permission_background_required">Hace falta permitir la ubicación en segundo plano para usar geovallas</string>
     <string name="dialog_background_permission_title">Permiso en segundo plano</string>
-    <string name="dialog_background_permission_message">Para que la aplicación detecte la entrada en una zona aunque no esté abierta, es necesario permitir la ubicación en segundo plano.</string>
+    <string name="dialog_background_permission_message">Para que la aplicación detecte la entrada en una zona aunque no esté abierta, es necesario permitir siempre la ubicación en segundo plano.</string>
     <string name="button_continue">Continuar</string>
     <string name="location_reminder_not_enabled">No se ha podido activar el recordatorio por ubicación</string>
     <string name="toast_location_reminder_enabled">Recordatorio por ubicación activado</string>
@@ -101,11 +101,12 @@
 
     <string name="notification_channel_name">Recordatorios por ubicación</string>
     <string name="notification_channel_description">Notificaciones al entrar en una zona asociada a una tarea</string>
-    <string name="notification_title_task_nearby">Tarea pendiente cerca de ti</string>
+    <string name="notification_title_task_nearby">Tarea pendiente cerca.</string>
     <string name="notification_action_complete">Completar</string>
     <string name="notification_radius_configured">Radio configurado: %1$d m</string>
     <string name="notification_radius_unavailable">Radio configurado: no disponible</string>
     <string name="notification_distance_to_point">Distancia aproximada al punto: %1$d m</string>
     <string name="notification_distance_unavailable">Distancia aproximada al punto: no disponible</string>
+    <string name="notification_distance_and_radius">📏 Distancia aprox.: %1$s| Radio geovalla: %2$s</string>
 
 </resources>

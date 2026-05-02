@@ -11,10 +11,10 @@ import android.os.Build
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
+import com.llorente.tfg_gpsreminders.R
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import com.llorente.tfg_gpsreminders.ui.TaskDetailActivity
 import com.llorente.tfg_gpsreminders.utils.LocationUtils
-import com.llorente.tfg_gpsreminders.R
 
 object TaskNotificationHelper {
 
@@ -84,23 +84,19 @@ object TaskNotificationHelper {
         )
 
         val locationText = getLocationText(context, task)
-        val distanceText = formatDistance(context, distanceToGeofenceCenterMeters)
 
-        val title = context.getString(R.string.notification_title_task_nearby)
-        val contentText = "${task.title} · $locationText"
-
-        val bigText = buildBigText(
-            context = context,
-            task = task,
-            locationText = locationText,
-            distanceText = distanceText
+        val notificationTitle = context.getString(R.string.notification_title_task_nearby)
+        val shortContentText = "${task.title} · 📍 $locationText"
+        val expandedContentText = buildExpandedContentText(
+            taskTitle = task.title,
+            locationText = locationText
         )
 
         val notification = NotificationCompat.Builder(context, CHANNEL_ID)
             .setSmallIcon(android.R.drawable.ic_dialog_map)
-            .setContentTitle(title)
-            .setContentText(contentText)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(bigText))
+            .setContentTitle(notificationTitle)
+            .setContentText(shortContentText)
+            .setStyle(NotificationCompat.BigTextStyle().bigText(expandedContentText))
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .setAutoCancel(true)
             .setContentIntent(openTaskPendingIntent)
@@ -118,35 +114,13 @@ object TaskNotificationHelper {
         NotificationManagerCompat.from(context).cancel(taskId)
     }
 
-    private fun buildBigText(
-        context: Context,
-        task: TaskEntity,
-        locationText: String,
-        distanceText: String
+    private fun buildExpandedContentText(
+        taskTitle: String,
+        locationText: String
     ): String {
-        val descriptionPart = if (!task.description.isNullOrBlank()) {
-            task.description
-        } else {
-            context.getString(R.string.no_description_added)
-        }
-
-        val radiusPart = if (task.radius != null) {
-            context.getString(
-                R.string.notification_radius_configured,
-                task.radius.toInt()
-            )
-        } else {
-            context.getString((R.string.notification_radius_unavailable))
-        }
-
         return """
-            ${task.title}
-            
-            $descriptionPart
-            
-            Lugar: $locationText
-            $distanceText
-            $radiusPart
+            📋 $taskTitle
+            📍 $locationText
         """.trimIndent()
     }
 
@@ -158,16 +132,5 @@ object TaskNotificationHelper {
             longitude = task.longitude,
             emptyText = context.getString(R.string.zone_configured)
         )
-    }
-
-    private fun formatDistance(context: Context, distanceToGeofenceCenterMeters: Int?): String {
-        return if (distanceToGeofenceCenterMeters != null) {
-            context.getString(
-                R.string.notification_distance_to_point,
-                distanceToGeofenceCenterMeters
-            )
-        } else {
-            context.getString(R.string.notification_distance_unavailable)
-        }
     }
 }

@@ -77,16 +77,22 @@ class MainActivity : AppCompatActivity() {
             isTaskListEmpty = tasks.isEmpty()
 
             taskAdapter.updateTasks(tasks)
-            textViewEmptyState.visibility = if (isTaskListEmpty) View.VISIBLE else View.GONE
+
+            if (isTaskListEmpty) {
+                textViewEmptyState.visibility = View.VISIBLE
+                recyclerViewTasks.visibility = View.GONE
+            } else {
+                textViewEmptyState.visibility = View.GONE
+                recyclerViewTasks.visibility = View.VISIBLE
+            }
         }
 
         fabAddTask.setOnClickListener {
             openAddTaskScreen()
         }
 
-        // Se va a permitir que el usuario pueda crear una tarea pulsando, tanto la pantalla como el boton +,
-        // solo cuando la lista está vacía,para mejorar la experiencia inicial del usuario.
-        // Cuando la lista no esté vacía, las nuevas tareas solo se podran crear desde el boton +.
+        // Permite crear una tarea pulsando la pantalla solo cuando la lista está vacía.
+        // Cuando ya hay tareas, la creación se mantiene en el botón +.
         textViewEmptyState.setOnClickListener {
             if (isTaskListEmpty) {
                 openAddTaskScreen()
@@ -94,8 +100,8 @@ class MainActivity : AppCompatActivity() {
         }
     }
 
-    // Se van a sincronizar las geovallas al abrir la app para intentar evitar que el sistema
-    // las deje en segundo plano y conseguir que se mantengan activas
+    // Se sincronizan las geovallas al abrir la app para intentar mantenerlas registradas
+    // en el sistema más tiempo.
     override fun onResume() {
         super.onResume()
         GeofenceSyncManager.syncAllGeofences(this)
