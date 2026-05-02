@@ -8,11 +8,8 @@ import androidx.test.espresso.Espresso.pressBack
 import androidx.test.espresso.action.ViewActions.click
 import androidx.test.espresso.action.ViewActions.closeSoftKeyboard
 import androidx.test.espresso.action.ViewActions.replaceText
-import androidx.test.espresso.assertion.ViewAssertions.doesNotExist
+import androidx.test.espresso.action.ViewActions.scrollTo
 import androidx.test.espresso.assertion.ViewAssertions.matches
-import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
-import androidx.test.espresso.matcher.ViewMatchers.withId
-import androidx.test.espresso.matcher.ViewMatchers.withText
 import androidx.test.ext.junit.runners.AndroidJUnit4
 import com.llorente.tfg_gpsreminders.MainActivity
 import com.llorente.tfg_gpsreminders.R
@@ -20,10 +17,17 @@ import org.junit.Before
 import org.junit.Test
 import org.junit.runner.RunWith
 import androidx.test.espresso.matcher.ViewMatchers.Visibility
+import androidx.test.espresso.matcher.ViewMatchers.isRoot
 import androidx.test.espresso.matcher.ViewMatchers.withEffectiveVisibility
+import androidx.test.espresso.matcher.ViewMatchers.isDisplayed
+import androidx.test.espresso.matcher.ViewMatchers.withId
+import androidx.test.espresso.matcher.ViewMatchers.withText
 import com.llorente.tfg_gpsreminders.data.local.AppDatabase
 import com.llorente.tfg_gpsreminders.data.local.TaskEntity
 import kotlinx.coroutines.runBlocking
+import androidx.test.espresso.intent.Intents
+import androidx.test.espresso.intent.matcher.IntentMatchers.hasComponent
+import org.junit.After
 
 @RunWith(AndroidJUnit4::class)
 class MainActivityTest {
@@ -56,6 +60,21 @@ class MainActivityTest {
     }
 
     @Test
+    fun emptyTaskList_clickingEmptyState_opensAddTaskScreen() {
+        Intents.init()
+
+        ActivityScenario.launch(MainActivity::class.java)
+
+        onView(withId(R.id.textViewEmptyState))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.textViewEmptyState))
+            .perform(click())
+
+        Intents.intended(hasComponent(AddTaskActivity::class.java.name))
+    }
+
+    @Test
     fun editTask_updatesTaskInList() {
         val originalTitle = "Tarea original ${System.currentTimeMillis()}"
         val updatedTitle = "Tarea editada ${System.currentTimeMillis()}"
@@ -69,7 +88,7 @@ class MainActivityTest {
 
         onView(withText(originalTitle)).perform(click())
 
-        onView(withId(R.id.buttonEditTask)).perform(click())
+        onView(withId(R.id.buttonEditTask)).perform(scrollTo(), click())
 
         onView(withId(R.id.editTextTitle)).perform(replaceText(updatedTitle), closeSoftKeyboard())
         onView(withId(R.id.editTextDescription)).perform(replaceText("Descripción editada"), closeSoftKeyboard())
@@ -98,11 +117,17 @@ class MainActivityTest {
 
         onView(withText(titleToDelete)).perform(click())
 
-        onView(withId(R.id.buttonDeleteTask)).perform(click())
+        onView(withId(R.id.buttonDeleteTask)).perform(scrollTo(), click())
 
-        onView(withText("Eliminar")).perform(click())
+        onView(withText(R.string.button_delete_confirm)).perform(click())
 
-        onView(withText(titleToDelete)).check(doesNotExist())
+        onView(isRoot()).perform(waitFor(500))
+
+        onView(withId(R.id.textViewEmptyState))
+            .check(matches(isDisplayed()))
+
+        onView(withId(R.id.recyclerViewTasks))
+            .check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
 
     @Test
@@ -155,7 +180,7 @@ class MainActivityTest {
             matches(withText("P.º de la Esperanza, 51, Arganzuela, 28005 Madrid, Spain"))
         )
 
-        onView(withId(R.id.buttonEditTask)).perform(click())
+        onView(withId(R.id.buttonEditTask)).perform(scrollTo(), click())
 
         onView(withId(R.id.textViewSelectedPlace)).check(matches(withText("Alcampo")))
         onView(withId(R.id.textViewSelectedLocation)).check(
@@ -188,7 +213,7 @@ class MainActivityTest {
         ActivityScenario.launch(MainActivity::class.java)
 
         onView(withText(title)).perform(click())
-        onView(withId(R.id.buttonEditTask)).perform(click())
+        onView(withId(R.id.buttonEditTask)).perform(scrollTo(), click())
 
         onView(withId(R.id.textViewSelectedPlace)).check(matches(withText("Alcampo")))
         onView(withId(R.id.textViewSelectedLocation)).check(
@@ -225,7 +250,7 @@ class MainActivityTest {
         ActivityScenario.launch(MainActivity::class.java)
 
         onView(withText(title)).perform(click())
-        onView(withId(R.id.buttonEditTask)).perform(click())
+        onView(withId(R.id.buttonEditTask)).perform(scrollTo(), click())
 
         onView(withId(R.id.buttonRemoveLocation)).perform(click())
 
@@ -322,4 +347,29 @@ class MainActivityTest {
         onView(withId(R.id.mapTaskDetailContainer))
             .check(matches(withEffectiveVisibility(Visibility.GONE)))
     }
+
+    private fun waitFor(delayMillis: Long): androidx.test.espresso.ViewAction {
+        return object : androidx.test.espresso.ViewAction {
+            override fun getConstraints() = androidx.test.espresso.matcher.ViewMatchers.isRoot()
+
+            override fun getDescription() = "Wait for $delayMillis milliseconds"
+
+            override fun perform(
+                uiController: androidx.test.espresso.UiController,
+                view: android.view.View
+            ) {
+                uiController.loopMainThreadForAtLeast(delayMillis)
+            }
+        }
+    }
+
+    @After
+    fun releaseIntents() {
+        try {
+            Intents.release()
+        } catch (_: IllegalStateException) {
+            // Intents solo se inicializa en los tests que lo necesitan.
+        }
+    }
+
 }

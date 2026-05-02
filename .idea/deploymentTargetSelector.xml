@@ -52,6 +52,9 @@
       <SelectionState runConfigName="taskWithoutLocation_showsDefaultTexts()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>
+      <SelectionState runConfigName="deleteTask_removesTaskFromListAfterConfirmation()">
+        <option name="selectionMode" value="DROPDOWN" />
+      </SelectionState>
     </selectionStates>
   </component>
 </project>

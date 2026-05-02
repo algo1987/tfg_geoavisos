@@ -172,7 +172,7 @@ class TaskDaoTest {
         assertEquals("Tarea inicial", tasks[0].description)
         assertEquals(40.4020, tasks[0].latitude!!, 0.0001)
         assertEquals(-3.7030, tasks[0].longitude!!, 0.0001)
-        assertEquals("Mercadona", tasks[0].locationName)
+        assertEquals("Supermercado Y", tasks[0].locationName)
         assertEquals("Calle del Ejemplo, 10, Madrid, Spain", tasks[0].locationAddress)
     }
 

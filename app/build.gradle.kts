@@ -79,4 +79,6 @@ dependencies {
     implementation("com.google.android.gms:play-services-maps:19.2.0")
     implementation("com.google.android.libraries.places:places:4.4.1")
     implementation("com.google.android.gms:play-services-location:21.3.0")
+
+    androidTestImplementation("androidx.test.espresso:espresso-intents:3.6.1")
 }
