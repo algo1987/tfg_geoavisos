@@ -73,9 +73,11 @@
     <string name="error_invalid_radius">Introduce un radio válido en metros</string>
     <string name="permission_location_required">Sin permiso de ubicación no se puede activar este recordatorio</string>
     <string name="permission_notification_required">Sin permiso de notificaciones no se podrán mostrar los avisos</string>
-    <string name="permission_background_required">Hace falta permitir la ubicación en segundo plano para usar geovallas</string>
+    <string name="permission_background_required">Hace falta permitir siempre la ubicación para usar geovallas con la aplicación cerrada</string>
+    <string name="dialog_location_permissions_title">Permisos necesarios</string>
+    <string name="dialog_location_permissions_message">Para activar este recordatorio, GeoAvisos necesita acceso a la ubicación y permiso para mostrar notificaciones. Después se pedirá también la ubicación en segundo plano para que el aviso funcione aunque la aplicación no esté abierta.</string>
     <string name="dialog_background_permission_title">Permiso en segundo plano</string>
-    <string name="dialog_background_permission_message">Para que la aplicación detecte la entrada en una zona aunque no esté abierta, es necesario permitir siempre la ubicación en segundo plano.</string>
+    <string name="dialog_background_permission_message">Para que el recordatorio funcione con la aplicación cerrada, Android necesita que en los permisos de ubicación se seleccione "Permitir siempre" si aparece esa opción.</string>
     <string name="button_continue">Continuar</string>
     <string name="location_reminder_not_enabled">No se ha podido activar el recordatorio por ubicación</string>
     <string name="toast_location_reminder_enabled">Recordatorio por ubicación activado</string>

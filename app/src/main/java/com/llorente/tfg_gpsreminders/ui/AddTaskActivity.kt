@@ -119,6 +119,8 @@ class AddTaskActivity : AppCompatActivity() {
             finalizeReminderActivation()
         }
 
+
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_add_task)
@@ -480,11 +482,24 @@ class AddTaskActivity : AppCompatActivity() {
         }
 
         if (missingPermissions.isNotEmpty()) {
-            permissionLauncher.launch(missingPermissions.toTypedArray())
+            showLocationPermissionsExplanation(missingPermissions)
             return
         }
 
         requestBackgroundLocationIfNeeded()
+    }
+
+    private fun showLocationPermissionsExplanation(missingPermissions: List<String>) {
+        MaterialAlertDialogBuilder(this)
+            .setTitle(R.string.dialog_location_permissions_title)
+            .setMessage(R.string.dialog_location_permissions_message)
+            .setNegativeButton(R.string.button_cancel) { _, _ ->
+                disableReminderWithMessage(getString(R.string.location_reminder_not_enabled))
+            }
+            .setPositiveButton(R.string.button_continue) { _, _ ->
+                permissionLauncher.launch(missingPermissions.toTypedArray())
+            }
+            .show()
     }
 
     private fun requestBackgroundLocationIfNeeded() {
