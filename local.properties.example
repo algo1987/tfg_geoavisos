@@ -1,0 +1,4 @@
+#Este archivo es de ejemplo.
+
+sdk.dir=/ruta/a/Android/SDK
+MAPS_API_KEY=API_KEY_DE_GOOGLE_MAPS
