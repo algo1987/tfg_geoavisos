@@ -37,8 +37,15 @@ Este proyecto ha sido desarrollado como Trabajo Fin de Grado del Curso de Adapta
 
 1. Clonar el repositorio.
 2. Abrir el proyecto en Android Studio.
-3. Configurar la clave de Google Maps si fuera necesario.
-4. Compilar y ejecutar la aplicación.
+3. Por motivos de seguridad, el archivo local.properties no se incluye en este repositorio, ya que contiene información específica del entorno local y credenciales que no deben publicarse.
+   Se ha añadido un archivo "local.properties.example" como ejemplo para poder configurar este archivo correctamente.
+   Para compilar y ejecutar la aplicación es necesario crear dicho archivo siguiendo estos pasos:
+   - Copiar "local.properties.example" como "local.properties".
+   - Configurar la ruta del SDK de Android (sdk.dir).
+   - Crear una clave de API de Google Maps Platform.
+   - Sustituir API_KEY_DE_GOOGLE_MAPS por la clave correspondiente.
+   - Sustituir la ruta de Android SDK por la que corresponda.
+5. Compilar y ejecutar la aplicación.
 
 ## APK de prueba
 
